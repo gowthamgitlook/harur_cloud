@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/otp_verification_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/auth/presentation/screens/splash_screen_glass.dart';
 import '../../features/customer/navigation/customer_main_screen.dart';
 import '../../features/customer/home/presentation/screens/food_detail_screen.dart';
 import '../../features/customer/cart/presentation/screens/checkout_screen.dart';
@@ -20,7 +21,7 @@ class AppRouter {
     switch (settings.name) {
       // Auth Routes
       case AppRoutes.splash:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
+        return MaterialPageRoute(builder: (_) => const SplashScreenGlass());
 
       case AppRoutes.login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
