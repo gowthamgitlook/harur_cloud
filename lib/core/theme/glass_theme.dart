@@ -4,26 +4,36 @@ import 'dart:ui';
 class GlassTheme {
   GlassTheme._();
 
-  // Blue Glassmorphism Color Palette
+  // Light Theme Color Palette
   static const Color primaryBlue = Color(0xFF0066FF);
   static const Color secondaryBlue = Color(0xFF00D4FF);
   static const Color darkBlue = Color(0xFF001F3F);
   static const Color lightBlue = Color(0xFF4DA6FF);
   static const Color accentCyan = Color(0xFF00FFF0);
 
-  // Glass Effect Colors
-  static const Color glassWhite = Color(0x30FFFFFF);
-  static const Color glassBorder = Color(0x40FFFFFF);
-  static const Color glassHighlight = Color(0x60FFFFFF);
+  // Light Background Colors
+  static const Color lightBackground = Color(0xFFF5F7FA);
+  static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color surfaceColor = Color(0xFFFAFBFC);
 
-  // Background Gradients
+  // Text Colors for Light Theme
+  static const Color textPrimary = Color(0xFF1A1A1A);
+  static const Color textSecondary = Color(0xFF666666);
+  static const Color textTertiary = Color(0xFF999999);
+
+  // Glass Effect Colors (for light theme)
+  static const Color glassWhite = Color(0xE6FFFFFF);
+  static const Color glassBorder = Color(0x40000000);
+  static const Color glassHighlight = Color(0x80FFFFFF);
+
+  // Background Gradients (Light Theme)
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF0066FF),
-      Color(0xFF00D4FF),
-      Color(0xFF7B2CBF),
+      Color(0xFFF5F7FA),
+      Color(0xFFE8F0FE),
+      Color(0xFFDDE7F9),
     ],
   );
 
@@ -31,9 +41,9 @@ class GlassTheme {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF001F3F),
-      Color(0xFF002855),
-      Color(0xFF003E7E),
+      Color(0xFFFFFFFF),
+      Color(0xFFF8F9FA),
+      Color(0xFFE9ECEF),
     ],
   );
 
@@ -41,8 +51,8 @@ class GlassTheme {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0x40FFFFFF),
-      Color(0x20FFFFFF),
+      Color(0xFFFFFFFF),
+      Color(0xFFFAFBFC),
     ],
   );
 
@@ -56,54 +66,63 @@ class GlassTheme {
     ],
   );
 
-  // Glass Container Decoration
+  // Glass Container Decoration (Light Theme)
   static BoxDecoration glassDecoration({
     double blur = 10,
-    double opacity = 0.2,
+    double opacity = 1.0,
     Color? color,
     BorderRadius? borderRadius,
     Border? border,
   }) {
     return BoxDecoration(
-      color: color ?? Colors.white.withOpacity(opacity),
+      color: color ?? cardBackground,
       borderRadius: borderRadius ?? BorderRadius.circular(20),
       border: border ?? Border.all(
-        color: Colors.white.withOpacity(0.3),
-        width: 1.5,
+        color: const Color(0xFFE0E0E0),
+        width: 1,
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.1),
-          blurRadius: 10,
-          offset: const Offset(0, 5),
+          color: Colors.black.withOpacity(0.08),
+          blurRadius: 15,
+          offset: const Offset(0, 4),
+          spreadRadius: 0,
+        ),
+        BoxShadow(
+          color: Colors.black.withOpacity(0.04),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+          spreadRadius: 0,
         ),
       ],
     );
   }
 
-  // Elevated Glass Card
+  // Elevated Glass Card (Light Theme)
   static BoxDecoration elevatedGlassDecoration({
     double blur = 15,
-    double opacity = 0.25,
+    double opacity = 1.0,
     BorderRadius? borderRadius,
   }) {
     return BoxDecoration(
-      gradient: cardGradient,
+      color: cardBackground,
       borderRadius: borderRadius ?? BorderRadius.circular(20),
       border: Border.all(
-        color: Colors.white.withOpacity(0.4),
-        width: 1.5,
+        color: const Color(0xFFE0E0E0),
+        width: 1,
       ),
       boxShadow: [
         BoxShadow(
-          color: primaryBlue.withOpacity(0.3),
+          color: primaryBlue.withOpacity(0.1),
           blurRadius: 20,
-          offset: const Offset(0, 10),
+          offset: const Offset(0, 8),
+          spreadRadius: 0,
         ),
         BoxShadow(
-          color: Colors.black.withOpacity(0.2),
-          blurRadius: 10,
-          offset: const Offset(0, 5),
+          color: Colors.black.withOpacity(0.06),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+          spreadRadius: 0,
         ),
       ],
     );
@@ -125,16 +144,16 @@ class GlassTheme {
   static const Color errorRed = Color(0xFFFF4444);
   static const Color infoBlue = Color(0xFF00D4FF);
 
-  // Text Styles with Glass Effect
+  // Text Styles (Light Theme - Black Text)
   static const TextStyle displayLarge = TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.bold,
-    color: Colors.white,
+    color: textPrimary,
     shadows: [
       Shadow(
-        color: Colors.black26,
-        blurRadius: 10,
-        offset: Offset(0, 2),
+        color: Colors.black12,
+        blurRadius: 4,
+        offset: Offset(0, 1),
       ),
     ],
   );
@@ -142,12 +161,12 @@ class GlassTheme {
   static const TextStyle displayMedium = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.bold,
-    color: Colors.white,
+    color: textPrimary,
     shadows: [
       Shadow(
-        color: Colors.black26,
-        blurRadius: 8,
-        offset: Offset(0, 2),
+        color: Colors.black12,
+        blurRadius: 4,
+        offset: Offset(0, 1),
       ),
     ],
   );
@@ -155,22 +174,22 @@ class GlassTheme {
   static const TextStyle headlineLarge = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w600,
-    color: Colors.white,
+    color: textPrimary,
   );
 
   static const TextStyle bodyLarge = TextStyle(
     fontSize: 16,
-    color: Colors.white,
+    color: textPrimary,
   );
 
   static const TextStyle bodyMedium = TextStyle(
     fontSize: 14,
-    color: Colors.white70,
+    color: textSecondary,
   );
 
   static const TextStyle labelSmall = TextStyle(
     fontSize: 12,
-    color: Colors.white60,
+    color: textTertiary,
   );
 }
 

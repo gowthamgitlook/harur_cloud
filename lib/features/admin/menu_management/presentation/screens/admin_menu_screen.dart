@@ -39,9 +39,9 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProv
     return Scaffold(
       body: AnimatedBackground(
         colors: const [
-          Color(0xFF0066FF),
-          Color(0xFF00D4FF),
-          Color(0xFF7B2CBF),
+          Color(0xFFF5F7FA),
+          Color(0xFFE8F0FE),
+          Color(0xFFFFFFFF),
         ],
         showParticles: false,
         child: SafeArea(
@@ -53,13 +53,13 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProv
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
-                    const Icon(Icons.restaurant_menu, color: Colors.white, size: 28),
+                    Icon(Icons.restaurant_menu, color: GlassTheme.primaryBlue, size: 28),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Text('Menu Management', style: GlassTheme.headlineLarge),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.refresh, color: Colors.white),
+                      icon: Icon(Icons.refresh, color: GlassTheme.textPrimary),
                       onPressed: () {
                         context.read<AdminMenuProvider>().fetchMenuItems();
                       },
@@ -75,9 +75,9 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProv
                 child: TabBar(
                   controller: _tabController,
                   isScrollable: true,
-                  indicatorColor: GlassTheme.secondaryBlue,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.white60,
+                  indicatorColor: GlassTheme.primaryBlue,
+                  labelColor: GlassTheme.textPrimary,
+                  unselectedLabelColor: GlassTheme.textSecondary,
                   tabs: [
                     const Tab(text: 'All'),
                     ...FoodCategory.values.map((category) => Tab(text: category.displayName)),
@@ -91,9 +91,9 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProv
                 Consumer<AdminMenuProvider>(
                   builder: (context, provider, child) {
                     if (provider.isLoading) {
-                      return const Center(
+                      return Center(
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(GlassTheme.primaryBlue),
                         ),
                       );
                     }
@@ -152,16 +152,16 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProv
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.restaurant_menu, size: 64, color: Colors.white54),
+            Icon(Icons.restaurant_menu, size: 64, color: GlassTheme.textTertiary),
             const SizedBox(height: 16),
             Text(
               'No menu items found',
-              style: GlassTheme.displayMedium.copyWith(color: Colors.white70),
+              style: GlassTheme.displayMedium.copyWith(color: GlassTheme.textSecondary),
             ),
             const SizedBox(height: 8),
             Text(
               'Tap the + button to add items',
-              style: GlassTheme.bodyMedium.copyWith(color: Colors.white60),
+              style: GlassTheme.bodyMedium,
             ),
           ],
         ),
@@ -191,22 +191,22 @@ class _MenuItemCard extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: GlassTheme.darkBlue,
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Delete Menu Item', style: TextStyle(color: Colors.white)),
+        title: Text('Delete Menu Item', style: TextStyle(color: GlassTheme.textPrimary)),
         content: Text(
           'Are you sure you want to delete "${item.name}"? This action cannot be undone.',
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: GlassTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+            child: Text('Cancel', style: TextStyle(color: GlassTheme.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
-              backgroundColor: Colors.red.withOpacity(0.2),
+              backgroundColor: Colors.red.withOpacity(0.1),
             ),
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
@@ -249,16 +249,20 @@ class _MenuItemCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      item.category.color.withOpacity(0.3),
-                      item.category.color.withOpacity(0.1),
+                      item.category.color.withOpacity(0.15),
+                      item.category.color.withOpacity(0.05),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: item.category.color.withOpacity(0.3),
+                    width: 1,
+                  ),
                 ),
                 child: Icon(
                   item.category.icon,
                   size: 40,
-                  color: Colors.white,
+                  color: item.category.color,
                 ),
               ),
 
@@ -281,8 +285,8 @@ class _MenuItemCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.orange, Colors.deepOrange],
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFA500), Color(0xFFFF6B00)],
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -300,7 +304,7 @@ class _MenuItemCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       item.description,
-                      style: GlassTheme.labelSmall.copyWith(color: Colors.white70),
+                      style: GlassTheme.labelSmall,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -313,14 +317,14 @@ class _MenuItemCard extends StatelessWidget {
                             color: item.category.color.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: item.category.color.withOpacity(0.5),
+                              color: item.category.color.withOpacity(0.4),
                             ),
                           ),
                           child: Text(
                             item.category.displayName,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.white,
+                              color: item.category.color,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -375,7 +379,7 @@ class _MenuItemCard extends StatelessWidget {
                     Text(
                       item.isAvailable ? 'Available' : 'Unavailable',
                       style: GlassTheme.labelSmall.copyWith(
-                        color: item.isAvailable ? Colors.greenAccent : Colors.white60,
+                        color: item.isAvailable ? Colors.green : GlassTheme.textTertiary,
                       ),
                     ),
                   ],
@@ -394,9 +398,9 @@ class _MenuItemCard extends StatelessWidget {
                     context.read<AdminMenuProvider>().fetchMenuItems();
                   }
                 },
-                icon: const Icon(Icons.edit, color: Colors.white),
+                icon: Icon(Icons.edit, color: GlassTheme.primaryBlue),
                 style: IconButton.styleFrom(
-                  backgroundColor: GlassTheme.primaryBlue.withOpacity(0.3),
+                  backgroundColor: GlassTheme.primaryBlue.withOpacity(0.1),
                 ),
               ),
 
@@ -405,9 +409,9 @@ class _MenuItemCard extends StatelessWidget {
               // Delete Button
               IconButton(
                 onPressed: () => _showDeleteConfirmation(context),
-                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                icon: const Icon(Icons.delete, color: Colors.red),
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.red.withOpacity(0.2),
+                  backgroundColor: Colors.red.withOpacity(0.1),
                 ),
               ),
             ],

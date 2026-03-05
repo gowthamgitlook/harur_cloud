@@ -10,11 +10,11 @@ class AnimatedBackground extends StatefulWidget {
     super.key,
     required this.child,
     this.colors = const [
-      Color(0xFF0066FF),
-      Color(0xFF00D4FF),
-      Color(0xFF7B2CBF),
+      Color(0xFFF5F7FA),
+      Color(0xFFE8F0FE),
+      Color(0xFFFFFFFF),
     ],
-    this.showParticles = true,
+    this.showParticles = false,
   });
 
   @override

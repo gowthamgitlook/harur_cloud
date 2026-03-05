@@ -156,9 +156,9 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
     return Scaffold(
       body: AnimatedBackground(
         colors: const [
-          Color(0xFF0066FF),
-          Color(0xFF00D4FF),
-          Color(0xFF7B2CBF),
+          Color(0xFFF5F7FA),
+          Color(0xFFE8F0FE),
+          Color(0xFFFFFFFF),
         ],
         showParticles: false,
         child: SafeArea(
@@ -171,7 +171,7 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      icon: Icon(Icons.arrow_back, color: GlassTheme.textPrimary),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     const SizedBox(width: 12),
@@ -182,11 +182,11 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                       ),
                     ),
                     if (_isLoading)
-                      const SizedBox(
+                      SizedBox(
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(GlassTheme.primaryBlue),
                           strokeWidth: 2,
                         ),
                       ),
@@ -224,10 +224,10 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                                     color: Colors.white.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.restaurant_menu,
                                     size: 80,
-                                    color: Colors.white54,
+                                    color: GlassTheme.textTertiary,
                                   ),
                                 )
                               else
@@ -282,14 +282,14 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                         GlassCard(
                           child: TextFormField(
                             controller: _nameController,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
+                            style: TextStyle(color: GlassTheme.textPrimary),
+                            decoration: InputDecoration(
                               labelText: 'Item Name *',
-                              labelStyle: TextStyle(color: Colors.white70),
+                              labelStyle: TextStyle(color: GlassTheme.textSecondary),
                               hintText: 'e.g., Chicken Biryani',
-                              hintStyle: TextStyle(color: Colors.white38),
+                              hintStyle: TextStyle(color: GlassTheme.textTertiary),
                               border: InputBorder.none,
-                              prefixIcon: Icon(Icons.restaurant, color: Colors.white70),
+                              prefixIcon: Icon(Icons.restaurant, color: GlassTheme.primaryBlue),
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
@@ -309,15 +309,15 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                         GlassCard(
                           child: TextFormField(
                             controller: _descriptionController,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: GlassTheme.textPrimary),
                             maxLines: 3,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               labelText: 'Description *',
-                              labelStyle: TextStyle(color: Colors.white70),
+                              labelStyle: TextStyle(color: GlassTheme.textSecondary),
                               hintText: 'Describe the dish...',
-                              hintStyle: TextStyle(color: Colors.white38),
+                              hintStyle: TextStyle(color: GlassTheme.textTertiary),
                               border: InputBorder.none,
-                              prefixIcon: Icon(Icons.description, color: Colors.white70),
+                              prefixIcon: Icon(Icons.description, color: GlassTheme.primaryBlue),
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
@@ -340,15 +340,15 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                               child: GlassCard(
                                 child: TextFormField(
                                   controller: _priceController,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: TextStyle(color: GlassTheme.textPrimary),
                                   keyboardType: TextInputType.number,
-                                  decoration: const InputDecoration(
+                                  decoration: InputDecoration(
                                     labelText: 'Price (₹) *',
-                                    labelStyle: TextStyle(color: Colors.white70),
+                                    labelStyle: TextStyle(color: GlassTheme.textSecondary),
                                     hintText: '0.00',
-                                    hintStyle: TextStyle(color: Colors.white38),
+                                    hintStyle: TextStyle(color: GlassTheme.textTertiary),
                                     border: InputBorder.none,
-                                    prefixIcon: Icon(Icons.currency_rupee, color: Colors.white70),
+                                    prefixIcon: Icon(Icons.currency_rupee, color: GlassTheme.primaryBlue),
                                   ),
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
@@ -368,13 +368,13 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                               child: GlassCard(
                                 child: DropdownButtonFormField<FoodCategory>(
                                   value: _selectedCategory,
-                                  dropdownColor: GlassTheme.darkBlue,
-                                  style: const TextStyle(color: Colors.white),
-                                  decoration: const InputDecoration(
+                                  dropdownColor: Colors.white,
+                                  style: TextStyle(color: GlassTheme.textPrimary),
+                                  decoration: InputDecoration(
                                     labelText: 'Category *',
-                                    labelStyle: TextStyle(color: Colors.white70),
+                                    labelStyle: TextStyle(color: GlassTheme.textSecondary),
                                     border: InputBorder.none,
-                                    prefixIcon: Icon(Icons.category, color: Colors.white70),
+                                    prefixIcon: Icon(Icons.category, color: GlassTheme.primaryBlue),
                                   ),
                                   items: FoodCategory.values.map((category) {
                                     return DropdownMenuItem(
@@ -402,31 +402,31 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                           child: Column(
                             children: [
                               SwitchListTile(
-                                title: const Text(
+                                title: Text(
                                   'Mark as Popular',
-                                  style: TextStyle(color: Colors.white),
+                                  style: TextStyle(color: GlassTheme.textPrimary),
                                 ),
-                                subtitle: const Text(
+                                subtitle: Text(
                                   'Show in popular items section',
-                                  style: TextStyle(color: Colors.white60, fontSize: 12),
+                                  style: TextStyle(color: GlassTheme.textSecondary, fontSize: 12),
                                 ),
                                 value: _isPopular,
-                                activeColor: GlassTheme.secondaryBlue,
+                                activeColor: GlassTheme.primaryBlue,
                                 onChanged: (value) {
                                   setState(() {
                                     _isPopular = value;
                                   });
                                 },
                               ),
-                              const Divider(color: Colors.white24),
+                              Divider(color: GlassTheme.textTertiary.withOpacity(0.3)),
                               SwitchListTile(
-                                title: const Text(
+                                title: Text(
                                   'Available',
-                                  style: TextStyle(color: Colors.white),
+                                  style: TextStyle(color: GlassTheme.textPrimary),
                                 ),
-                                subtitle: const Text(
+                                subtitle: Text(
                                   'Customer can order this item',
-                                  style: TextStyle(color: Colors.white60, fontSize: 12),
+                                  style: TextStyle(color: GlassTheme.textSecondary, fontSize: 12),
                                 ),
                                 value: _isAvailable,
                                 activeColor: Colors.green,
