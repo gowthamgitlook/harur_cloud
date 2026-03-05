@@ -8,6 +8,10 @@ class MockMenuService {
   MockMenuService._internal() {
     // Initialize with mock data
     _menuItems = List.from(MockMenuData.menuItems);
+    // Emit initial data to stream
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _menuStreamController.add(_menuItems);
+    });
   }
 
   List<MenuItemModel> _menuItems = [];
