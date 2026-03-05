@@ -334,8 +334,7 @@ class _AdminOrderCard extends StatelessWidget {
 
   void _showAssignDeliveryDialog(BuildContext context, OrderModel order) {
     // Get delivery partners from MockAuthService
-    final deliveryPartners = MockAuthService()
-        ._mockUsers
+    final deliveryPartners = MockAuthService.mockUsers
         .where((user) => user.role == UserRole.delivery)
         .toList();
 

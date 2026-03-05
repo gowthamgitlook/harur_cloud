@@ -39,6 +39,7 @@ class AppColors {
   static const Color overlay = Color(0x80000000);
   static const Color disabled = Color(0xFFBDBDBD);
   static const Color placeholder = Color(0xFFE0E0E0);
+  static const Color backgroundGrey = Color(0xFFF5F5F5);
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(

@@ -10,7 +10,7 @@ class MockAuthService implements IAuthService {
   static const String _userKey = 'current_user';
 
   // Mock users for testing
-  static final List<UserModel> _mockUsers = [
+  static final List<UserModel> mockUsers = [
     UserModel(
       id: '1',
       name: 'Test Customer',
@@ -50,7 +50,7 @@ class MockAuthService implements IAuthService {
     await Future.delayed(const Duration(seconds: 1));
 
     // Check if phone number exists in mock users
-    final user = _mockUsers.firstWhere(
+    final user = mockUsers.firstWhere(
       (u) => u.phone == phoneNumber,
       orElse: () => throw Exception('Phone number not registered. Use: +919876543210, +919876543211, or +919876543212'),
     );
@@ -71,7 +71,7 @@ class MockAuthService implements IAuthService {
     }
 
     // Find user by phone number
-    final user = _mockUsers.firstWhere(
+    final user = mockUsers.firstWhere(
       (u) => u.phone == phoneNumber,
       orElse: () => throw Exception('User not found'),
     );

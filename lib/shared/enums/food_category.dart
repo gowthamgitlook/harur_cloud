@@ -37,6 +37,21 @@ enum FoodCategory {
     }
   }
 
+  Color get color {
+    switch (this) {
+      case FoodCategory.biryani:
+        return const Color(0xFFFF6B00); // Orange
+      case FoodCategory.friedRice:
+        return const Color(0xFF4CAF50); // Green
+      case FoodCategory.parotta:
+        return const Color(0xFFFFC107); // Amber
+      case FoodCategory.grill:
+        return const Color(0xFFF44336); // Red
+      case FoodCategory.drinks:
+        return const Color(0xFF2196F3); // Blue
+    }
+  }
+
   String get iconPath {
     switch (this) {
       case FoodCategory.biryani:
