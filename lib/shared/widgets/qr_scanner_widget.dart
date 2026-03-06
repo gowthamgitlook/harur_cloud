@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../core/theme/glass_theme.dart';
@@ -32,13 +33,30 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
   }
 
   Future<void> _checkCameraPermission() async {
-    final status = await Permission.camera.request();
-    setState(() {
-      hasPermission = status.isGranted;
-    });
+    try {
+      // Check current status first
+      var status = await Permission.camera.status;
 
-    if (!status.isGranted) {
+      // If not granted, request permission
+      if (!status.isGranted) {
+        status = await Permission.camera.request();
+      }
+
       if (mounted) {
+        setState(() {
+          hasPermission = status.isGranted;
+        });
+
+        if (!status.isGranted) {
+          _showPermissionDialog();
+        }
+      }
+    } catch (e) {
+      debugPrint('Error checking camera permission: $e');
+      if (mounted) {
+        setState(() {
+          hasPermission = false;
+        });
         _showPermissionDialog();
       }
     }
@@ -47,10 +65,17 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
   void _showPermissionDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Camera Permission Required'),
-        content: const Text(
-          'Please grant camera permission to scan QR codes.',
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Camera Permission Required',
+          style: TextStyle(color: GlassTheme.textPrimary),
+        ),
+        content: Text(
+          'Please grant camera permission to scan QR codes. This is required for QR scanning functionality.',
+          style: TextStyle(color: GlassTheme.textSecondary),
         ),
         actions: [
           TextButton(
@@ -58,14 +83,22 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
               Navigator.of(context).pop();
               Navigator.of(context).pop();
             },
-            child: const Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(color: GlassTheme.textSecondary)),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               Navigator.of(context).pop();
               await openAppSettings();
+              // Recheck permission when returning
+              await Future.delayed(const Duration(seconds: 1));
               _checkCameraPermission();
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: GlassTheme.primaryBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             child: const Text('Open Settings'),
           ),
         ],

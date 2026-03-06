@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../core/constants/app_strings.dart';
+import '../../../../../core/theme/glass_theme.dart';
 import '../../../../../shared/widgets/loading_indicator.dart';
+import '../../../../../shared/widgets/animated_background.dart';
 import '../../../../auth/providers/auth_provider.dart';
 import '../../providers/order_provider.dart';
 import '../widgets/order_card_widget.dart';
@@ -41,20 +43,53 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.myOrders),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.primaryOrange,
-          labelColor: AppColors.primaryOrange,
-          unselectedLabelColor: AppColors.textSecondary,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'History'),
-          ],
-        ),
-      ),
-      body: Consumer<OrderProvider>(
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // App Bar Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.myOrders,
+                      style: GlassTheme.headlineLarge,
+                    ),
+                    const SizedBox(height: 12),
+                    TabBar(
+                      controller: _tabController,
+                      indicatorColor: GlassTheme.primaryBlue,
+                      labelColor: GlassTheme.primaryBlue,
+                      unselectedLabelColor: GlassTheme.textSecondary,
+                      indicatorWeight: 3,
+                      labelStyle: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                      tabs: const [
+                        Tab(text: 'Active'),
+                        Tab(text: 'History'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Tab View Content
+              Expanded(
+                child: Consumer<OrderProvider>(
         builder: (context, orderProvider, child) {
           if (orderProvider.isLoading) {
             return const LoadingIndicator(message: 'Loading orders...');
@@ -102,6 +137,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             ],
           );
         },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -115,19 +155,20 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             Icon(
               Icons.receipt_long_outlined,
               size: AppSizes.iconXXL * 2,
-              color: AppColors.textSecondary,
+              color: GlassTheme.textTertiary,
             ),
             SizedBox(height: AppSizes.spacingLG),
             Text(
               'No active orders',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: GlassTheme.displayMedium.copyWith(
+                fontSize: 20,
+                color: GlassTheme.textSecondary,
+              ),
             ),
             SizedBox(height: AppSizes.spacingSM),
             Text(
               'Your active orders will appear here',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: GlassTheme.bodyMedium,
             ),
           ],
         ),
@@ -170,19 +211,20 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             Icon(
               Icons.history,
               size: AppSizes.iconXXL * 2,
-              color: AppColors.textSecondary,
+              color: GlassTheme.textTertiary,
             ),
             SizedBox(height: AppSizes.spacingLG),
             Text(
               'No order history',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: GlassTheme.displayMedium.copyWith(
+                fontSize: 20,
+                color: GlassTheme.textSecondary,
+              ),
             ),
             SizedBox(height: AppSizes.spacingSM),
             Text(
               'Your completed orders will appear here',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: GlassTheme.bodyMedium,
             ),
           ],
         ),
