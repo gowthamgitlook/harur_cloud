@@ -144,7 +144,7 @@ class _CartScreenState extends State<CartScreen> {
                           Container(
                             padding: EdgeInsets.all(AppSizes.paddingMD),
                             decoration: BoxDecoration(
-                              color: AppColors.success.withOpacity(0.1),
+                              color: AppColors.success.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(AppSizes.radiusSM),
                               border: Border.all(color: AppColors.success),
                             ),
@@ -191,7 +191,7 @@ class _CartScreenState extends State<CartScreen> {
                             padding: EdgeInsets.all(AppSizes.paddingSM),
                             margin: EdgeInsets.only(bottom: AppSizes.spacingSM),
                             decoration: BoxDecoration(
-                              color: AppColors.warning.withOpacity(0.1),
+                              color: AppColors.warning.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(AppSizes.radiusSM),
                               border: Border.all(color: AppColors.warning),
                             ),

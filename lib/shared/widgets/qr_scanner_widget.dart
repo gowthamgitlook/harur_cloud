@@ -1,8 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/theme/glass_theme.dart';
 
 class QRScannerWidget extends StatefulWidget {
@@ -20,8 +19,7 @@ class QRScannerWidget extends StatefulWidget {
 }
 
 class _QRScannerWidgetState extends State<QRScannerWidget> {
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? controller;
+  final MobileScannerController controller = MobileScannerController();
   bool isScanning = true;
   bool hasPermission = false;
   bool isFlashOn = false;
@@ -107,15 +105,6 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
   }
 
   @override
-  void reassemble() {
-    super.reassemble();
-    if (Platform.isAndroid) {
-      controller?.pauseCamera();
-    }
-    controller?.resumeCamera();
-  }
-
-  @override
   Widget build(BuildContext context) {
     if (!hasPermission) {
       return Scaffold(
@@ -154,15 +143,43 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
       body: Stack(
         children: [
           // QR Camera View
-          QRView(
-            key: qrKey,
-            onQRViewCreated: _onQRViewCreated,
-            overlay: QrScannerOverlayShape(
-              borderColor: GlassTheme.secondaryBlue,
-              borderRadius: 20,
-              borderLength: 40,
-              borderWidth: 8,
-              cutOutSize: MediaQuery.of(context).size.width * 0.8,
+          MobileScanner(
+            controller: controller,
+            onDetect: (capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              if (isScanning && barcodes.isNotEmpty) {
+                final String? code = barcodes.first.rawValue;
+                if (code != null) {
+                  setState(() {
+                    isScanning = false;
+                  });
+
+                  // Call callback with scanned data
+                  widget.onScanComplete(code);
+
+                  // Close scanner after 500ms
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (mounted) {
+                      Navigator.of(context).pop(code);
+                    }
+                  });
+                }
+              }
+            },
+          ),
+          
+          // Overlay to mimic the original look
+          Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.width * 0.8,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: GlassTheme.secondaryBlue,
+                  width: 4,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
             ),
           ),
 
@@ -183,7 +200,7 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.7),
                     Colors.transparent,
                   ],
                 ),
@@ -210,11 +227,10 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
                       isFlashOn ? Icons.flash_on : Icons.flash_off,
                       color: Colors.white,
                     ),
-                    onPressed: () async {
-                      await controller?.toggleFlash();
-                      final flashStatus = await controller?.getFlashStatus();
+                    onPressed: () {
+                      controller.toggleTorch();
                       setState(() {
-                        isFlashOn = flashStatus ?? false;
+                        isFlashOn = !isFlashOn;
                       });
                     },
                   ),
@@ -235,7 +251,7 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withOpacity(0.8),
+                    Colors.black.withValues(alpha: 0.8),
                     Colors.transparent,
                   ],
                 ),
@@ -291,33 +307,9 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
     );
   }
 
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      if (isScanning && scanData.code != null) {
-        setState(() {
-          isScanning = false;
-        });
-
-        // Vibrate on successful scan
-        controller.pauseCamera();
-
-        // Call callback with scanned data
-        widget.onScanComplete(scanData.code!);
-
-        // Close scanner after 500ms
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            Navigator.of(context).pop(scanData.code);
-          }
-        });
-      }
-    });
-  }
-
   @override
   void dispose() {
-    controller?.dispose();
+    controller.dispose();
     super.dispose();
   }
 }
@@ -361,13 +353,17 @@ class QRCodeDisplayWidget extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: GlassTheme.primaryBlue.withOpacity(0.3),
+                color: GlassTheme.primaryBlue.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: const Icon(Icons.qr_code, size: 200),
+          child: QrImageView(
+            data: data,
+            version: QrVersions.auto,
+            size: size,
+          ),
           // In production, use: QrImageView(data: data, size: size)
         ),
         const SizedBox(height: 16),

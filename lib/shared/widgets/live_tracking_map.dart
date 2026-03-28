@@ -5,6 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import '../../core/services/location_tracking_service.dart';
 import '../../core/theme/glass_theme.dart';
 
+import '../../config/app_config.dart';
+
 /// Live tracking map widget - Shows real-time delivery partner location
 class LiveTrackingMap extends StatefulWidget {
   final double? customerLat;
@@ -43,6 +45,11 @@ class _LiveTrackingMapState extends State<LiveTrackingMap> {
   }
 
   Future<void> _initializeTracking() async {
+    // Start simulation if using mock services
+    if (AppConfig.useMockServices) {
+      _locationService.startSimulation();
+    }
+
     // Listen to location updates
     _locationSubscription = _locationService.locationStream.listen((position) {
       if (mounted) {
@@ -215,7 +222,7 @@ class _LiveTrackingMapState extends State<LiveTrackingMap> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: GlassTheme.primaryBlue.withOpacity(0.1),
+                        color: GlassTheme.primaryBlue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -255,7 +262,7 @@ class _LiveTrackingMapState extends State<LiveTrackingMap> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: Colors.green.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(

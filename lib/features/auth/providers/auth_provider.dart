@@ -4,6 +4,7 @@ import '../../../shared/enums/user_role.dart';
 import '../../../shared/models/user_model.dart';
 import '../data/services/auth_service_interface.dart';
 import '../data/services/mock_auth_service.dart';
+import '../data/services/firebase_auth_service.dart';
 
 enum AuthState {
   initial,
@@ -23,7 +24,7 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider({IAuthService? authService})
       : _authService = authService ??
-            (AppConfig.useMockServices ? MockAuthService() : MockAuthService());
+            (AppConfig.useMockServices ? MockAuthService() : FirebaseAuthService());
 
   // Getters
   UserModel? get currentUser => _currentUser;

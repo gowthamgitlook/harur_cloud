@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../core/constants/app_strings.dart';
+import '../../../../../core/theme/theme_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,7 +13,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _isDarkMode = false;
   bool _notificationsEnabled = true;
   bool _orderUpdates = true;
   bool _promotionalOffers = true;
@@ -23,187 +24,190 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: const Text(AppStrings.settings),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Appearance Section
-            _buildSectionHeader(context, 'Appearance'),
-            _buildSettingTile(
-              context,
-              icon: Icons.dark_mode,
-              title: 'Dark Mode',
-              subtitle: 'Enable dark theme',
-              trailing: Switch(
-                value: _isDarkMode,
-                onChanged: (value) {
-                  setState(() => _isDarkMode = value);
-                  _showComingSoonSnackBar(context);
-                },
-                activeColor: AppColors.primaryOrange,
-              ),
+      body: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Appearance Section
+                _buildSectionHeader(context, 'Appearance'),
+                _buildSettingTile(
+                  context,
+                  icon: Icons.dark_mode,
+                  title: 'Dark Mode',
+                  subtitle: 'Enable dark theme',
+                  trailing: Switch(
+                    value: themeProvider.isDarkMode,
+                    onChanged: (value) {
+                      themeProvider.toggleTheme();
+                    },
+                    activeThumbColor: AppColors.primaryOrange,
+                  ),
+                ),
+
+                Divider(height: 1, color: AppColors.divider),
+
+                // Notifications Section
+                _buildSectionHeader(context, 'Notifications'),
+                _buildSettingTile(
+                  context,
+                  icon: Icons.notifications,
+                  title: 'Push Notifications',
+                  subtitle: 'Enable push notifications',
+                  trailing: Switch(
+                    value: _notificationsEnabled,
+                    onChanged: (value) {
+                      setState(() => _notificationsEnabled = value);
+                      if (!value) {
+                        setState(() {
+                          _orderUpdates = false;
+                          _promotionalOffers = false;
+                        });
+                      }
+                    },
+                    activeThumbColor: AppColors.primaryOrange,
+                  ),
+                ),
+
+                _buildSettingTile(
+                  context,
+                  icon: Icons.shopping_bag,
+                  title: 'Order Updates',
+                  subtitle: 'Get notified about order status',
+                  trailing: Switch(
+                    value: _orderUpdates,
+                    onChanged: _notificationsEnabled
+                        ? (value) => setState(() => _orderUpdates = value)
+                        : null,
+                    activeThumbColor: AppColors.primaryOrange,
+                  ),
+                  enabled: _notificationsEnabled,
+                ),
+
+                _buildSettingTile(
+                  context,
+                  icon: Icons.local_offer,
+                  title: 'Promotional Offers',
+                  subtitle: 'Receive offers and discounts',
+                  trailing: Switch(
+                    value: _promotionalOffers,
+                    onChanged: _notificationsEnabled
+                        ? (value) => setState(() => _promotionalOffers = value)
+                        : null,
+                    activeThumbColor: AppColors.primaryOrange,
+                  ),
+                  enabled: _notificationsEnabled,
+                ),
+
+                _buildSettingTile(
+                  context,
+                  icon: Icons.volume_up,
+                  title: 'Notification Sound',
+                  subtitle: 'Play sound for notifications',
+                  trailing: Switch(
+                    value: _soundEnabled,
+                    onChanged: _notificationsEnabled
+                        ? (value) => setState(() => _soundEnabled = value)
+                        : null,
+                    activeThumbColor: AppColors.primaryOrange,
+                  ),
+                  enabled: _notificationsEnabled,
+                ),
+
+                Divider(height: 1, color: AppColors.divider),
+
+                // App Preferences Section
+                _buildSectionHeader(context, 'App Preferences'),
+                _buildSettingTile(
+                  context,
+                  icon: Icons.language,
+                  title: 'Language',
+                  subtitle: 'English (Default)',
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                  onTap: () => _showComingSoonSnackBar(context),
+                ),
+
+                _buildSettingTile(
+                  context,
+                  icon: Icons.location_city,
+                  title: 'Default Location',
+                  subtitle: 'Harur, Tamil Nadu',
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                  onTap: () => _showComingSoonSnackBar(context),
+                ),
+
+                Divider(height: 1, color: AppColors.divider),
+
+                // Data & Privacy Section
+                _buildSectionHeader(context, 'Data & Privacy'),
+                _buildSettingTile(
+                  context,
+                  icon: Icons.storage,
+                  title: 'Clear Cache',
+                  subtitle: 'Free up storage space',
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                  onTap: () => _showClearCacheDialog(context),
+                ),
+
+                _buildSettingTile(
+                  context,
+                  icon: Icons.download,
+                  title: 'Download Data',
+                  subtitle: 'Download your order history',
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                  onTap: () => _showComingSoonSnackBar(context),
+                ),
+
+                _buildSettingTile(
+                  context,
+                  icon: Icons.delete_forever,
+                  title: 'Delete Account',
+                  subtitle: 'Permanently delete your account',
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                  onTap: () => _showDeleteAccountDialog(context),
+                  textColor: AppColors.error,
+                ),
+
+                Divider(height: 1, color: AppColors.divider),
+
+                // Legal Section
+                _buildSectionHeader(context, 'Legal'),
+                _buildSettingTile(
+                  context,
+                  icon: Icons.description,
+                  title: 'Terms & Conditions',
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                  onTap: () => _showComingSoonSnackBar(context),
+                ),
+
+                _buildSettingTile(
+                  context,
+                  icon: Icons.privacy_tip,
+                  title: 'Privacy Policy',
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                  onTap: () => _showComingSoonSnackBar(context),
+                ),
+
+                _buildSettingTile(
+                  context,
+                  icon: Icons.gavel,
+                  title: 'Licenses',
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                  onTap: () {
+                    showLicensePage(
+                      context: context,
+                      applicationName: AppStrings.appName,
+                      applicationVersion: '1.0.0',
+                    );
+                  },
+                ),
+
+                SizedBox(height: AppSizes.spacingXL),
+              ],
             ),
-
-            Divider(height: 1, color: AppColors.divider),
-
-            // Notifications Section
-            _buildSectionHeader(context, 'Notifications'),
-            _buildSettingTile(
-              context,
-              icon: Icons.notifications,
-              title: 'Push Notifications',
-              subtitle: 'Enable push notifications',
-              trailing: Switch(
-                value: _notificationsEnabled,
-                onChanged: (value) {
-                  setState(() => _notificationsEnabled = value);
-                  if (!value) {
-                    setState(() {
-                      _orderUpdates = false;
-                      _promotionalOffers = false;
-                    });
-                  }
-                },
-                activeColor: AppColors.primaryOrange,
-              ),
-            ),
-
-            _buildSettingTile(
-              context,
-              icon: Icons.shopping_bag,
-              title: 'Order Updates',
-              subtitle: 'Get notified about order status',
-              trailing: Switch(
-                value: _orderUpdates,
-                onChanged: _notificationsEnabled
-                    ? (value) => setState(() => _orderUpdates = value)
-                    : null,
-                activeColor: AppColors.primaryOrange,
-              ),
-              enabled: _notificationsEnabled,
-            ),
-
-            _buildSettingTile(
-              context,
-              icon: Icons.local_offer,
-              title: 'Promotional Offers',
-              subtitle: 'Receive offers and discounts',
-              trailing: Switch(
-                value: _promotionalOffers,
-                onChanged: _notificationsEnabled
-                    ? (value) => setState(() => _promotionalOffers = value)
-                    : null,
-                activeColor: AppColors.primaryOrange,
-              ),
-              enabled: _notificationsEnabled,
-            ),
-
-            _buildSettingTile(
-              context,
-              icon: Icons.volume_up,
-              title: 'Notification Sound',
-              subtitle: 'Play sound for notifications',
-              trailing: Switch(
-                value: _soundEnabled,
-                onChanged: _notificationsEnabled
-                    ? (value) => setState(() => _soundEnabled = value)
-                    : null,
-                activeColor: AppColors.primaryOrange,
-              ),
-              enabled: _notificationsEnabled,
-            ),
-
-            Divider(height: 1, color: AppColors.divider),
-
-            // App Preferences Section
-            _buildSectionHeader(context, 'App Preferences'),
-            _buildSettingTile(
-              context,
-              icon: Icons.language,
-              title: 'Language',
-              subtitle: 'English (Default)',
-              trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-              onTap: () => _showComingSoonSnackBar(context),
-            ),
-
-            _buildSettingTile(
-              context,
-              icon: Icons.location_city,
-              title: 'Default Location',
-              subtitle: 'Harur, Tamil Nadu',
-              trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-              onTap: () => _showComingSoonSnackBar(context),
-            ),
-
-            Divider(height: 1, color: AppColors.divider),
-
-            // Data & Privacy Section
-            _buildSectionHeader(context, 'Data & Privacy'),
-            _buildSettingTile(
-              context,
-              icon: Icons.storage,
-              title: 'Clear Cache',
-              subtitle: 'Free up storage space',
-              trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-              onTap: () => _showClearCacheDialog(context),
-            ),
-
-            _buildSettingTile(
-              context,
-              icon: Icons.download,
-              title: 'Download Data',
-              subtitle: 'Download your order history',
-              trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-              onTap: () => _showComingSoonSnackBar(context),
-            ),
-
-            _buildSettingTile(
-              context,
-              icon: Icons.delete_forever,
-              title: 'Delete Account',
-              subtitle: 'Permanently delete your account',
-              trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-              onTap: () => _showDeleteAccountDialog(context),
-              textColor: AppColors.error,
-            ),
-
-            Divider(height: 1, color: AppColors.divider),
-
-            // Legal Section
-            _buildSectionHeader(context, 'Legal'),
-            _buildSettingTile(
-              context,
-              icon: Icons.description,
-              title: 'Terms & Conditions',
-              trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-              onTap: () => _showComingSoonSnackBar(context),
-            ),
-
-            _buildSettingTile(
-              context,
-              icon: Icons.privacy_tip,
-              title: 'Privacy Policy',
-              trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-              onTap: () => _showComingSoonSnackBar(context),
-            ),
-
-            _buildSettingTile(
-              context,
-              icon: Icons.gavel,
-              title: 'Licenses',
-              trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-              onTap: () {
-                showLicensePage(
-                  context: context,
-                  applicationName: AppStrings.appName,
-                  applicationVersion: '1.0.0',
-                );
-              },
-            ),
-
-            SizedBox(height: AppSizes.spacingXL),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -242,7 +246,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       leading: Container(
         padding: EdgeInsets.all(AppSizes.paddingSM),
         decoration: BoxDecoration(
-          color: (textColor ?? AppColors.primaryOrange).withOpacity(0.1),
+          color: (textColor ?? AppColors.primaryOrange).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppSizes.radiusSM),
         ),
         child: Icon(
@@ -259,7 +263,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ? Text(
               subtitle,
               style: TextStyle(
-                color: enabled ? AppColors.textSecondary : AppColors.textSecondary.withOpacity(0.5),
+                color: enabled ? AppColors.textSecondary : AppColors.textSecondary.withValues(alpha: 0.5),
               ),
             )
           : null,

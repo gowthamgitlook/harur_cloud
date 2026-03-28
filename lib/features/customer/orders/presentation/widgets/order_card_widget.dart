@@ -192,27 +192,27 @@ class OrderCardWidget extends StatelessWidget {
 
     switch (status) {
       case OrderStatus.placed:
-        backgroundColor = AppColors.info.withOpacity(0.1);
+        backgroundColor = AppColors.info.withValues(alpha: 0.1);
         textColor = AppColors.info;
         icon = Icons.receipt;
         break;
       case OrderStatus.preparing:
-        backgroundColor = AppColors.warning.withOpacity(0.1);
+        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
         textColor = AppColors.warning;
         icon = Icons.restaurant;
         break;
       case OrderStatus.outForDelivery:
-        backgroundColor = AppColors.primaryOrange.withOpacity(0.1);
+        backgroundColor = AppColors.primaryOrange.withValues(alpha: 0.1);
         textColor = AppColors.primaryOrange;
         icon = Icons.delivery_dining;
         break;
       case OrderStatus.delivered:
-        backgroundColor = AppColors.success.withOpacity(0.1);
+        backgroundColor = AppColors.success.withValues(alpha: 0.1);
         textColor = AppColors.success;
         icon = Icons.check_circle;
         break;
       case OrderStatus.cancelled:
-        backgroundColor = AppColors.error.withOpacity(0.1);
+        backgroundColor = AppColors.error.withValues(alpha: 0.1);
         textColor = AppColors.error;
         icon = Icons.cancel;
         break;

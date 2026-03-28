@@ -51,7 +51,7 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(AppSizes.paddingMD),
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 child: Row(
                   children: [
                     Icon(Icons.info_outline, color: Colors.blue),
@@ -144,7 +144,7 @@ class _DeliveryCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

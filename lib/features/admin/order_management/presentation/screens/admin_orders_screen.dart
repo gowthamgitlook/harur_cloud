@@ -7,8 +7,6 @@ import '../../../../../shared/enums/order_status.dart';
 import '../../../../../shared/enums/user_role.dart';
 import '../../../../../shared/models/order_model.dart';
 import '../../../../auth/data/services/mock_auth_service.dart';
-import '../../../../auth/providers/auth_provider.dart';
-import '../../../../customer/orders/presentation/widgets/order_card_widget.dart';
 import '../../providers/admin_order_provider.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
@@ -109,7 +107,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               onTap: () => provider.filterByStatus(status),
               color: status.color,
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -179,7 +177,7 @@ class _AdminOrderCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: order.status.color.withOpacity(0.1),
+                    color: order.status.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(

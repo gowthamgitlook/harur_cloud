@@ -91,7 +91,7 @@ class _GlassCardState extends State<GlassCard>
                 borderRadius: widget.borderRadius ?? BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: GlassTheme.primaryBlue.withOpacity(0.2),
+                    color: GlassTheme.primaryBlue.withValues(alpha: 0.2),
                     blurRadius: _elevationAnimation.value,
                     offset: Offset(0, _elevationAnimation.value / 2),
                   ),
@@ -111,14 +111,14 @@ class _GlassCardState extends State<GlassCard>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          (widget.glassColor ?? Colors.white).withOpacity(0.25),
-                          (widget.glassColor ?? Colors.white).withOpacity(0.1),
+                          (widget.glassColor ?? Colors.white).withValues(alpha: 0.25),
+                          (widget.glassColor ?? Colors.white).withValues(alpha: 0.1),
                         ],
                       ),
                       borderRadius:
                           widget.borderRadius ?? BorderRadius.circular(20),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         width: 1.5,
                       ),
                     ),
@@ -189,18 +189,18 @@ class GlassStatusBadge extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            color.withOpacity(0.8),
-            color.withOpacity(0.6),
+            color.withValues(alpha: 0.8),
+            color.withValues(alpha: 0.6),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -295,17 +295,17 @@ class _GlassIconButtonState extends State<GlassIconButton>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withOpacity(0.3),
-                Colors.white.withOpacity(0.1),
+                Colors.white.withValues(alpha: 0.3),
+                Colors.white.withValues(alpha: 0.1),
               ],
             ),
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: (widget.color ?? GlassTheme.primaryBlue).withOpacity(0.3),
+                color: (widget.color ?? GlassTheme.primaryBlue).withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -353,21 +353,21 @@ class GlassChip extends StatelessWidget {
               ? GlassTheme.buttonGradient
               : LinearGradient(
                   colors: [
-                    Colors.white.withOpacity(0.2),
-                    Colors.white.withOpacity(0.1),
+                    Colors.white.withValues(alpha: 0.2),
+                    Colors.white.withValues(alpha: 0.1),
                   ],
                 ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? Colors.white.withOpacity(0.5)
-                : Colors.white.withOpacity(0.2),
+                ? Colors.white.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.2),
             width: 1.5,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: GlassTheme.primaryBlue.withOpacity(0.4),
+                    color: GlassTheme.primaryBlue.withValues(alpha: 0.4),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -430,10 +430,10 @@ class GlassProgressIndicator extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(height / 2),
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

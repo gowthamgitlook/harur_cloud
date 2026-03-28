@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/otp_verification_screen.dart';
-import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen_glass.dart';
 import '../../features/customer/navigation/customer_main_screen.dart';
+import '../../features/customer/home/presentation/screens/notifications_screen.dart';
+import '../../features/customer/profile/presentation/screens/add_address_screen.dart';
 import '../../features/customer/home/presentation/screens/food_detail_screen.dart';
 import '../../features/customer/cart/presentation/screens/checkout_screen.dart';
 import '../../features/customer/orders/presentation/screens/order_tracking_screen.dart';
@@ -35,6 +36,12 @@ class AppRouter {
       // Customer Routes
       case AppRoutes.customerMain:
         return MaterialPageRoute(builder: (_) => const CustomerMainScreen());
+
+      case AppRoutes.notifications:
+        return MaterialPageRoute(builder: (_) => const NotificationsScreen());
+
+      case AppRoutes.addAddress:
+        return MaterialPageRoute(builder: (_) => const AddAddressScreen());
 
       case AppRoutes.foodDetail:
         final menuItem = settings.arguments as MenuItemModel;

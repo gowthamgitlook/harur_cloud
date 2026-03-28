@@ -83,13 +83,13 @@ class GlassTheme {
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.08),
+          color: Colors.black.withValues(alpha: 0.08),
           blurRadius: 15,
           offset: const Offset(0, 4),
           spreadRadius: 0,
         ),
         BoxShadow(
-          color: Colors.black.withOpacity(0.04),
+          color: Colors.black.withValues(alpha: 0.04),
           blurRadius: 8,
           offset: const Offset(0, 2),
           spreadRadius: 0,
@@ -113,13 +113,13 @@ class GlassTheme {
       ),
       boxShadow: [
         BoxShadow(
-          color: primaryBlue.withOpacity(0.1),
+          color: primaryBlue.withValues(alpha: 0.1),
           blurRadius: 20,
           offset: const Offset(0, 8),
           spreadRadius: 0,
         ),
         BoxShadow(
-          color: Colors.black.withOpacity(0.06),
+          color: Colors.black.withValues(alpha: 0.06),
           blurRadius: 12,
           offset: const Offset(0, 4),
           spreadRadius: 0,
@@ -235,8 +235,8 @@ class GlassMorphism extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.white.withOpacity(opacity),
-                  Colors.white.withOpacity(opacity * 0.5),
+                  Colors.white.withValues(alpha: opacity),
+                  Colors.white.withValues(alpha: opacity * 0.5),
                 ],
               ),
             ),
@@ -312,12 +312,12 @@ class _GlassButtonState extends State<GlassButton>
             gradient: GlassTheme.buttonGradient,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: GlassTheme.primaryBlue.withOpacity(0.5),
+                color: GlassTheme.primaryBlue.withValues(alpha: 0.5),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -333,8 +333,8 @@ class _GlassButtonState extends State<GlassButton>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.2),
-                      Colors.white.withOpacity(0.05),
+                      Colors.white.withValues(alpha: 0.2),
+                      Colors.white.withValues(alpha: 0.05),
                     ],
                   ),
                 ),

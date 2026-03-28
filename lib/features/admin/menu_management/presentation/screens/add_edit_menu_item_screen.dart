@@ -7,7 +7,6 @@ import '../../../../../core/theme/glass_theme.dart';
 import '../../../../../core/utils/permissions_handler.dart';
 import '../../../../../shared/enums/food_category.dart';
 import '../../../../../shared/models/menu_item_model.dart';
-import '../../../../../shared/models/addon_model.dart';
 import '../../../../../shared/widgets/animated_background.dart';
 import '../../../../../shared/widgets/glass_card.dart';
 import '../../providers/admin_menu_provider.dart';
@@ -221,7 +220,7 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                                 Container(
                                   height: 200,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.1),
+                                    color: Colors.white.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Icon(
@@ -234,10 +233,10 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                                 Container(
                                   height: 200,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.1),
+                                    color: Colors.white.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: Colors.white.withValues(alpha: 0.3),
                                       width: 2,
                                       style: BorderStyle.solid,
                                     ),
@@ -367,7 +366,7 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                             Expanded(
                               child: GlassCard(
                                 child: DropdownButtonFormField<FoodCategory>(
-                                  value: _selectedCategory,
+                                  initialValue: _selectedCategory,
                                   dropdownColor: Colors.white,
                                   style: TextStyle(color: GlassTheme.textPrimary),
                                   decoration: InputDecoration(
@@ -411,14 +410,14 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                                   style: TextStyle(color: GlassTheme.textSecondary, fontSize: 12),
                                 ),
                                 value: _isPopular,
-                                activeColor: GlassTheme.primaryBlue,
+                                activeThumbColor: GlassTheme.primaryBlue,
                                 onChanged: (value) {
                                   setState(() {
                                     _isPopular = value;
                                   });
                                 },
                               ),
-                              Divider(color: GlassTheme.textTertiary.withOpacity(0.3)),
+                              Divider(color: GlassTheme.textTertiary.withValues(alpha: 0.3)),
                               SwitchListTile(
                                 title: Text(
                                   'Available',
@@ -429,7 +428,7 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                                   style: TextStyle(color: GlassTheme.textSecondary, fontSize: 12),
                                 ),
                                 value: _isAvailable,
-                                activeColor: Colors.green,
+                                activeThumbColor: Colors.green,
                                 onChanged: (value) {
                                   setState(() {
                                     _isAvailable = value;

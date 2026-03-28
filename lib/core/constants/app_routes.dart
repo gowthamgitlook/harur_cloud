@@ -10,6 +10,7 @@ class AppRoutes {
 
   // Customer Routes
   static const String customerHome = '/customer/home';
+  static const String notifications = '/customer/notifications';
   static const String customerMain = '/customer/main';
   static const String foodDetail = '/customer/food-detail';
   static const String categoryItems = '/customer/category-items';

@@ -24,7 +24,6 @@ class CartProvider extends ChangeNotifier {
 
   double get deliveryFee {
     if (subtotal == 0) return 0.0;
-    if (subtotal < AppConfig.minimumOrderAmount) return 0.0;
     if (_promoCode == 'FREESHIP') return 0.0;
     return AppConfig.deliveryFeeFlat;
   }
@@ -53,6 +52,7 @@ class CartProvider extends ChangeNotifier {
   // Add item to cart
   void addItem({
     required MenuItemModel menuItem,
+    int quantity = 1,
     List<AddonModel> selectedAddons = const [],
     SpiceLevel spiceLevel = SpiceLevel.medium,
     String? specialInstructions,
@@ -61,19 +61,20 @@ class CartProvider extends ChangeNotifier {
     final existingIndex = _items.indexWhere((item) =>
         item.menuItem.id == menuItem.id &&
         _areAddonsEqual(item.selectedAddons, selectedAddons) &&
-        item.spiceLevel == spiceLevel);
+        item.spiceLevel == spiceLevel &&
+        item.specialInstructions == specialInstructions);
 
     if (existingIndex != -1) {
       // Increase quantity
       _items[existingIndex] = _items[existingIndex].copyWith(
-        quantity: _items[existingIndex].quantity + 1,
+        quantity: _items[existingIndex].quantity + quantity,
       );
     } else {
       // Add new item
       final cartItem = CartItemModel(
         id: const Uuid().v4(),
         menuItem: menuItem,
-        quantity: 1,
+        quantity: quantity,
         selectedAddons: selectedAddons,
         spiceLevel: spiceLevel,
         specialInstructions: specialInstructions,

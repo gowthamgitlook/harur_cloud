@@ -1,20 +1,31 @@
 import 'package:flutter/foundation.dart';
 import '../../../../data/mock/mock_menu_data.dart';
+import '../../../../data/services/menu_service.dart';
+import '../../../../config/app_config.dart';
 import '../../../../shared/enums/food_category.dart';
 import '../../../../shared/models/menu_item_model.dart';
 
 class MenuProvider extends ChangeNotifier {
+  final IMenuService _menuService;
+
   List<MenuItemModel> _allItems = [];
   List<MenuItemModel> _filteredItems = [];
+  List<String> _banners = [];
   FoodCategory? _selectedCategory;
   String _searchQuery = '';
   bool _isLoading = false;
 
+  MenuProvider({IMenuService? menuService})
+      : _menuService = menuService ??
+            (AppConfig.useMockServices ? FirestoreMenuService() : FirestoreMenuService()); 
+            // Note: Currently using FirestoreMenuService for both to show how it works, 
+            // but usually mock would have its own implementation of IMenuService.
+
   // Getters
   List<MenuItemModel> get allItems => _allItems;
   List<MenuItemModel> get filteredItems => _filteredItems;
-  List<MenuItemModel> get popularItems => MockMenuData.getPopularItems();
-  List<String> get banners => MockMenuData.banners;
+  List<MenuItemModel> get popularItems => _allItems.where((item) => item.isPopular && item.isAvailable).toList();
+  List<String> get banners => _banners;
   FoodCategory? get selectedCategory => _selectedCategory;
   String get searchQuery => _searchQuery;
   bool get isLoading => _isLoading;
@@ -24,11 +35,22 @@ class MenuProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    if (AppConfig.useMockServices) {
+       // Still using mock data for some parts if needed
+       _allItems = MockMenuData.menuItems;
+       _banners = MockMenuData.banners;
+    } else {
+      try {
+        _allItems = await _menuService.getMenuItems();
+        _banners = await _menuService.getBanners();
+      } catch (e) {
+        debugPrint('Error loading menu from Firestore: $e');
+        _allItems = MockMenuData.menuItems;
+        _banners = MockMenuData.banners;
+      }
+    }
 
-    _allItems = MockMenuData.menuItems;
-    _filteredItems = MockMenuData.getAvailableItems();
+    _filteredItems = _allItems.where((item) => item.isAvailable).toList();
 
     _isLoading = false;
     notifyListeners();
@@ -40,10 +62,10 @@ class MenuProvider extends ChangeNotifier {
 
     if (category == null) {
       _filteredItems = _searchQuery.isEmpty
-          ? MockMenuData.getAvailableItems()
-          : MockMenuData.searchItems(_searchQuery);
+          ? _allItems.where((item) => item.isAvailable).toList()
+          : _searchItemsLocally(_searchQuery);
     } else {
-      final categoryItems = MockMenuData.getItemsByCategory(category);
+      final categoryItems = _allItems.where((item) => item.category == category).toList();
       _filteredItems = _searchQuery.isEmpty
           ? categoryItems.where((item) => item.isAvailable).toList()
           : categoryItems
@@ -63,12 +85,12 @@ class MenuProvider extends ChangeNotifier {
 
     if (query.isEmpty) {
       if (_selectedCategory == null) {
-        _filteredItems = MockMenuData.getAvailableItems();
+        _filteredItems = _allItems.where((item) => item.isAvailable).toList();
       } else {
         filterByCategory(_selectedCategory);
       }
     } else {
-      final searchResults = MockMenuData.searchItems(query);
+      final searchResults = _searchItemsLocally(query);
       _filteredItems = _selectedCategory == null
           ? searchResults.where((item) => item.isAvailable).toList()
           : searchResults
@@ -79,11 +101,20 @@ class MenuProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<MenuItemModel> _searchItemsLocally(String query) {
+    final lowerQuery = query.toLowerCase();
+    return _allItems.where((item) {
+      return item.name.toLowerCase().contains(lowerQuery) ||
+          item.description.toLowerCase().contains(lowerQuery) ||
+          item.category.displayName.toLowerCase().contains(lowerQuery);
+    }).toList();
+  }
+
   // Clear filters
   void clearFilters() {
     _selectedCategory = null;
     _searchQuery = '';
-    _filteredItems = MockMenuData.getAvailableItems();
+    _filteredItems = _allItems.where((item) => item.isAvailable).toList();
     notifyListeners();
   }
 

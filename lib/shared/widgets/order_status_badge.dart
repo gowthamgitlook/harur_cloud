@@ -20,7 +20,7 @@ class OrderStatusBadge extends StatelessWidget {
         vertical: AppSizes.paddingXS,
       ),
       decoration: BoxDecoration(
-        color: status.color.withOpacity(0.1),
+        color: status.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppSizes.radiusSM),
         border: Border.all(
           color: status.color,

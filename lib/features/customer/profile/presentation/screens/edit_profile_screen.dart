@@ -57,7 +57,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: AppSizes.avatarXL,
-                    backgroundColor: AppColors.primaryOrange.withOpacity(0.1),
+                    backgroundColor: AppColors.primaryOrange.withValues(alpha: 0.1),
                     child: Icon(
                       Icons.person,
                       size: AppSizes.iconXXL * 1.5,
@@ -150,9 +150,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               Container(
                 padding: EdgeInsets.all(AppSizes.paddingMD),
                 decoration: BoxDecoration(
-                  color: AppColors.info.withOpacity(0.1),
+                  color: AppColors.info.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppSizes.radiusSM),
-                  border: Border.all(color: AppColors.info.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [

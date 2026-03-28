@@ -8,6 +8,7 @@ import '../../../../../shared/widgets/food_item_card.dart';
 import '../../../../../shared/widgets/loading_indicator.dart';
 import '../../providers/menu_provider.dart';
 import '../../../cart/providers/cart_provider.dart';
+import '../../../navigation/providers/navigation_provider.dart';
 import '../widgets/category_chip.dart';
 import '../widgets/banner_carousel.dart';
 
@@ -56,7 +57,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     IconButton(
                       icon: const Icon(Icons.notifications_outlined),
                       onPressed: () {
-                        // TODO: Navigate to notifications
+                        Navigator.pushNamed(context, '/customer/notifications');
                       },
                     ),
                   ],
@@ -136,7 +137,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                   ),
                 ),
 
-                // Popular Items (only when no search/filter)
+                // Popular Items
                 if (menuProvider.searchQuery.isEmpty &&
                     menuProvider.selectedCategory == null &&
                     menuProvider.popularItems.isNotEmpty)
@@ -175,7 +176,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                             child: FoodItemCard(
                               item: item,
                               onTap: () {
-                                // TODO: Navigate to food detail
                                 _showFoodDetail(context, item);
                               },
                               onAddToCart: () {
@@ -230,7 +230,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     sliver: SliverGrid(
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        childAspectRatio: 0.7,
+                        childAspectRatio: 0.65,
                         crossAxisSpacing: 12,
                         mainAxisSpacing: 12,
                       ),
@@ -281,8 +281,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         action: SnackBarAction(
           label: 'VIEW CART',
           onPressed: () {
-            // Switch to cart tab
-            // This will be handled by the parent navigation
+            context.read<NavigationProvider>().switchToCart();
           },
         ),
       ),

@@ -63,8 +63,6 @@ class _SplashScreenGlassState extends State<SplashScreenGlass>
       case UserRole.delivery:
         Navigator.of(context).pushReplacementNamed(AppRoutes.deliveryMain);
         break;
-      default:
-        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
     }
   }
 
@@ -106,7 +104,7 @@ class _SplashScreenGlassState extends State<SplashScreenGlass>
                         gradient: GlassTheme.buttonGradient,
                         boxShadow: [
                           BoxShadow(
-                            color: GlassTheme.primaryBlue.withOpacity(0.5),
+                            color: GlassTheme.primaryBlue.withValues(alpha: 0.5),
                             blurRadius: 30,
                             spreadRadius: 5,
                           ),

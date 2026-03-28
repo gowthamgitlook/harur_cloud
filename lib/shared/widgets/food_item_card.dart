@@ -111,7 +111,10 @@ class FoodItemCard extends StatelessWidget {
               ),
               // Item Details
               Padding(
-                padding: EdgeInsets.all(AppSizes.paddingSM),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSizes.paddingSM,
+                  vertical: AppSizes.paddingXS,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -130,7 +133,7 @@ class FoodItemCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: AppSizes.spacingSM),
+                    SizedBox(height: AppSizes.spacingXS),
                     // Rating (if available)
                     if (item.rating != null)
                       Row(
@@ -142,7 +145,7 @@ class FoodItemCard extends StatelessWidget {
                           ),
                           SizedBox(width: AppSizes.spacingXS),
                           Text(
-                            '${item.rating!.toStringAsFixed(1)}',
+                            item.rating!.toStringAsFixed(1),
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           if (item.reviewCount != null)

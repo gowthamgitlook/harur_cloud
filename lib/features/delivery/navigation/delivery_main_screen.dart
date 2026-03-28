@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_routes.dart';
-import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
-import '../../auth/providers/auth_provider.dart';
 import '../presentation/screens/available_deliveries_screen.dart';
 import '../presentation/screens/active_deliveries_screen.dart';
 import '../presentation/screens/delivery_history_screen.dart';

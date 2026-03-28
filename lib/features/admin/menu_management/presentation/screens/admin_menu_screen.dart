@@ -117,7 +117,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProv
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: GlassTheme.primaryBlue.withOpacity(0.5),
+              color: GlassTheme.primaryBlue.withValues(alpha: 0.5),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -206,7 +206,7 @@ class _MenuItemCard extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
-              backgroundColor: Colors.red.withOpacity(0.1),
+              backgroundColor: Colors.red.withValues(alpha: 0.1),
             ),
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
@@ -249,13 +249,13 @@ class _MenuItemCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      item.category.color.withOpacity(0.15),
-                      item.category.color.withOpacity(0.05),
+                      item.category.color.withValues(alpha: 0.15),
+                      item.category.color.withValues(alpha: 0.05),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: item.category.color.withOpacity(0.3),
+                    color: item.category.color.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -314,10 +314,10 @@ class _MenuItemCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: item.category.color.withOpacity(0.2),
+                            color: item.category.color.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: item.category.color.withOpacity(0.4),
+                              color: item.category.color.withValues(alpha: 0.4),
                             ),
                           ),
                           child: Text(
@@ -374,7 +374,7 @@ class _MenuItemCard extends StatelessWidget {
                           );
                         }
                       },
-                      activeColor: Colors.greenAccent,
+                      activeThumbColor: Colors.greenAccent,
                     ),
                     Text(
                       item.isAvailable ? 'Available' : 'Unavailable',
@@ -400,7 +400,7 @@ class _MenuItemCard extends StatelessWidget {
                 },
                 icon: Icon(Icons.edit, color: GlassTheme.primaryBlue),
                 style: IconButton.styleFrom(
-                  backgroundColor: GlassTheme.primaryBlue.withOpacity(0.1),
+                  backgroundColor: GlassTheme.primaryBlue.withValues(alpha: 0.1),
                 ),
               ),
 
@@ -411,7 +411,7 @@ class _MenuItemCard extends StatelessWidget {
                 onPressed: () => _showDeleteConfirmation(context),
                 icon: const Icon(Icons.delete, color: Colors.red),
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.red.withOpacity(0.1),
+                  backgroundColor: Colors.red.withValues(alpha: 0.1),
                 ),
               ),
             ],

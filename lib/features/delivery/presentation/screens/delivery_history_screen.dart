@@ -75,7 +75,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
                       Text(
                         user?.phone ?? '',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textLight.withOpacity(0.9),
+                              color: AppColors.textLight.withValues(alpha: 0.9),
                             ),
                       ),
                       SizedBox(height: AppSizes.spacingLG),
@@ -91,7 +91,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
                           Container(
                             width: 1,
                             height: 40,
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                           ),
                           _buildStatItem(
                             context,
@@ -153,7 +153,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
                         ...entry.value.map((order) => _HistoryOrderCard(order: order)),
                       ],
                     );
-                  }).toList(),
+                  }),
 
                 // Logout Button
                 Padding(
@@ -198,7 +198,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
         ),
       ],
@@ -220,7 +220,7 @@ class _HistoryOrderCard extends StatelessWidget {
       ),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.green.withOpacity(0.1),
+          backgroundColor: Colors.green.withValues(alpha: 0.1),
           child: Icon(Icons.check_circle, color: Colors.green),
         ),
         title: Text(

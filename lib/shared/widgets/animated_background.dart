@@ -124,7 +124,7 @@ class _AnimatedBackgroundState extends State<AnimatedBackground>
                       gradient: RadialGradient(
                         colors: [
                           widget.colors[index % widget.colors.length]
-                              .withOpacity(0.3),
+                              .withValues(alpha: 0.3),
                           Colors.transparent,
                         ],
                       ),
@@ -177,7 +177,7 @@ class ParticlePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (var particle in particles) {
       final paint = Paint()
-        ..color = Colors.white.withOpacity(particle.opacity)
+        ..color = Colors.white.withValues(alpha: particle.opacity)
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(

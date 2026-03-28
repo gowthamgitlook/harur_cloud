@@ -50,12 +50,12 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                color: AppColors.primaryOrange.withOpacity(0.1),
+                color: AppColors.primaryOrange.withValues(alpha: 0.1),
                 child: Center(
                   child: Icon(
                     Icons.restaurant,
                     size: AppSizes.iconXXL * 2,
-                    color: AppColors.primaryOrange.withOpacity(0.3),
+                    color: AppColors.primaryOrange.withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -136,7 +136,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         ),
                         SizedBox(width: AppSizes.spacingXS),
                         Text(
-                          '${widget.menuItem.rating!.toStringAsFixed(1)}',
+                          widget.menuItem.rating!.toStringAsFixed(1),
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
@@ -319,6 +319,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
   void _addToCart() {
     context.read<CartProvider>().addItem(
           menuItem: widget.menuItem,
+          quantity: _quantity,
           selectedAddons: _selectedAddons,
           spiceLevel: _selectedSpiceLevel,
           specialInstructions: _instructionsController.text.isNotEmpty

@@ -14,11 +14,75 @@ class LocationTrackingService {
   Stream<Position> get locationStream => _locationStreamController.stream;
 
   StreamSubscription<Position>? _positionStream;
+  Timer? _simulationTimer;
   bool _isTracking = false;
+  bool _isSimulation = false;
   Position? _lastKnownPosition;
 
   bool get isTracking => _isTracking;
+  bool get isSimulation => _isSimulation;
   Position? get lastKnownPosition => _lastKnownPosition;
+
+  /// Start mock simulation (for testing live tracking)
+  void startSimulation() {
+    if (_isSimulation) return;
+
+    _isSimulation = true;
+    _isTracking = true;
+
+    // Simulate path around Harur
+    final path = [
+      _createMockPosition(12.0540, 78.4822), // Start (Harur)
+      _createMockPosition(12.0545, 78.4828),
+      _createMockPosition(12.0550, 78.4835),
+      _createMockPosition(12.0555, 78.4842),
+      _createMockPosition(12.0560, 78.4850),
+      _createMockPosition(12.0565, 78.4858), // Moving East
+      _createMockPosition(12.0570, 78.4865),
+      _createMockPosition(12.0575, 78.4872),
+      _createMockPosition(12.0580, 78.4880), // End
+    ];
+
+    int index = 0;
+    _simulationTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (index >= path.length) {
+        index = 0; // Loop path
+      }
+
+      final position = path[index];
+      _lastKnownPosition = position;
+      _locationStreamController.add(position);
+      debugPrint('Mock location updated: ${position.latitude}, ${position.longitude}');
+
+      index++;
+    });
+
+    debugPrint('Location simulation started');
+  }
+
+  /// Stop simulation
+  void stopSimulation() {
+    _simulationTimer?.cancel();
+    _simulationTimer = null;
+    _isSimulation = false;
+    _isTracking = false;
+    debugPrint('Location simulation stopped');
+  }
+
+  Position _createMockPosition(double lat, double lng) {
+    return Position(
+      latitude: lat,
+      longitude: lng,
+      timestamp: DateTime.now(),
+      accuracy: 10.0,
+      altitude: 0.0,
+      heading: 0.0,
+      speed: 10.0, // moving at 10m/s (36km/h)
+      speedAccuracy: 0.0,
+      altitudeAccuracy: 0.0,
+      headingAccuracy: 0.0,
+    );
+  }
 
   /// Start tracking location (for delivery partners)
   Future<bool> startTracking() async {

@@ -82,7 +82,7 @@ class OrderTimelineWidget extends StatelessWidget {
   }) {
     final color = isCompleted || isCurrent
         ? AppColors.primaryOrange
-        : AppColors.textSecondary.withOpacity(0.3);
+        : AppColors.textSecondary.withValues(alpha: 0.3);
 
     return IntrinsicHeight(
       child: Row(
@@ -134,7 +134,7 @@ class OrderTimelineWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isCompleted
                           ? AppColors.primaryOrange
-                          : AppColors.textSecondary.withOpacity(0.3),
+                          : AppColors.textSecondary.withValues(alpha: 0.3),
                     ),
                   ),
                 ),
@@ -189,7 +189,7 @@ class OrderTimelineWidget extends StatelessWidget {
                         vertical: AppSizes.paddingXS,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryOrange.withOpacity(0.1),
+                        color: AppColors.primaryOrange.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(AppSizes.radiusXS),
                       ),
                       child: Row(

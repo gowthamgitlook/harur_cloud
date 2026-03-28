@@ -158,7 +158,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   width: AppSizes.imageLG,
                   height: AppSizes.imageLG,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryOrange.withOpacity(0.1),
+                    color: AppColors.primaryOrange.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -251,9 +251,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               Container(
                 padding: EdgeInsets.all(AppSizes.paddingMD),
                 decoration: BoxDecoration(
-                  color: AppColors.warning.withOpacity(0.1),
+                  color: AppColors.warning.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppSizes.radiusSM),
-                  border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [

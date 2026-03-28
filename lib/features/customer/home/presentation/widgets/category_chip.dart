@@ -30,12 +30,12 @@ class CategoryChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.primaryOrange
-                : AppColors.primaryOrange.withOpacity(0.1),
+                : AppColors.primaryOrange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppSizes.radiusLG),
             border: Border.all(
               color: isSelected
                   ? AppColors.primaryOrange
-                  : AppColors.primaryOrange.withOpacity(0.3),
+                  : AppColors.primaryOrange.withValues(alpha: 0.3),
             ),
           ),
           child: Row(

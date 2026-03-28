@@ -74,7 +74,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
                 itemCount: widget.banners.length,
                 itemBuilder: (context, index) {
                   return Container(
-                    color: AppColors.primaryOrange.withOpacity(0.1),
+                    color: AppColors.primaryOrange.withValues(alpha: 0.1),
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

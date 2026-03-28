@@ -74,8 +74,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       case UserRole.delivery:
         Navigator.of(context).pushReplacementNamed(AppRoutes.deliveryMain);
         break;
-      default:
-        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
     }
   }
 
@@ -129,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   Text(
                     AppStrings.appTagline,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.textLight.withOpacity(0.9),
+                          color: AppColors.textLight.withValues(alpha: 0.9),
                         ),
                     textAlign: TextAlign.center,
                   ),

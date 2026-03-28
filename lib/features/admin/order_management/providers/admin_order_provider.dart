@@ -35,6 +35,8 @@ class AdminOrderProvider with ChangeNotifier {
     // Subscribe to order updates
     _orderSubscription = _orderService.ordersStream.listen((orders) {
       _allOrders = orders;
+      // Also update dashboard stats when orders change
+      _dashboardStats = _orderService.getDashboardStats();
       notifyListeners();
     });
   }
@@ -47,6 +49,7 @@ class AdminOrderProvider with ChangeNotifier {
 
     try {
       _allOrders = await _orderService.getAllOrders();
+      _dashboardStats = _orderService.getDashboardStats();
       _isLoading = false;
       notifyListeners();
     } catch (e) {

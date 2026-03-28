@@ -8,6 +8,8 @@ import '../../providers/order_provider.dart';
 import '../widgets/order_timeline_widget.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../../shared/widgets/live_tracking_map.dart';
+
 class OrderTrackingScreen extends StatefulWidget {
   final OrderModel order;
 
@@ -59,6 +61,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd MMM yyyy, hh:mm a');
+    final showMap = _currentOrder.status == OrderStatus.outForDelivery;
 
     return Scaffold(
       appBar: AppBar(
@@ -68,7 +71,19 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Live Tracking Map (only when Out for Delivery)
+            if (showMap)
+              SizedBox(
+                height: 300,
+                child: LiveTrackingMap(
+                  customerLat: _currentOrder.deliveryAddress.latitude,
+                  customerLng: _currentOrder.deliveryAddress.longitude,
+                  deliveryPartnerName: _currentOrder.deliveryPartnerName ?? 'Delivery Partner',
+                ),
+              ),
+
             // Order Status Header
+            if (!showMap)
             Container(
               width: double.infinity,
               padding: EdgeInsets.all(AppSizes.paddingLG),
@@ -76,7 +91,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 gradient: LinearGradient(
                   colors: [
                     AppColors.primaryOrange,
-                    AppColors.primaryOrange.withOpacity(0.8),
+                    AppColors.primaryOrange.withValues(alpha: 0.8),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -96,7 +111,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                   Text(
                     dateFormat.format(_currentOrder.createdAt),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textLight.withOpacity(0.9),
+                          color: AppColors.textLight.withValues(alpha: 0.9),
                         ),
                   ),
                   SizedBox(height: AppSizes.spacingMD),
@@ -119,7 +134,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                             Text(
                               _getStatusMessage(_currentOrder.status),
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textLight.withOpacity(0.9),
+                                    color: AppColors.textLight.withValues(alpha: 0.9),
                                   ),
                             ),
                           ],
@@ -240,7 +255,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                 width: 50,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryOrange.withOpacity(0.1),
+                                  color: AppColors.primaryOrange.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(AppSizes.radiusSM),
                                 ),
                                 child: Center(
@@ -381,7 +396,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     return Container(
       padding: EdgeInsets.all(AppSizes.paddingMD),
       decoration: BoxDecoration(
-        color: AppColors.textLight.withOpacity(0.2),
+        color: AppColors.textLight.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(AppSizes.radiusMD),
       ),
       child: Icon(

@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   gradient: LinearGradient(
                     colors: [
                       AppColors.primaryOrange,
-                      AppColors.primaryOrange.withOpacity(0.8),
+                      AppColors.primaryOrange.withValues(alpha: 0.8),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -92,7 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Text(
                       user?.phone ?? '',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.textLight.withOpacity(0.9),
+                            color: AppColors.textLight.withValues(alpha: 0.9),
                           ),
                     ),
 
@@ -111,13 +111,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           width: 1,
                           height: 40,
-                          color: AppColors.textLight.withOpacity(0.3),
+                          color: AppColors.textLight.withValues(alpha: 0.3),
                         ),
                         _buildStatItem(
                           context,
                           icon: Icons.currency_rupee,
                           label: 'Spent',
-                          value: '${orderProvider.getTotalSpent().toStringAsFixed(0)}',
+                          value: orderProvider.getTotalSpent().toStringAsFixed(0),
                         ),
                       ],
                     ),
@@ -279,7 +279,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textLight.withOpacity(0.9),
+                color: AppColors.textLight.withValues(alpha: 0.9),
               ),
         ),
       ],
@@ -302,7 +302,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: Container(
           padding: EdgeInsets.all(AppSizes.paddingSM),
           decoration: BoxDecoration(
-            color: AppColors.primaryOrange.withOpacity(0.1),
+            color: AppColors.primaryOrange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppSizes.radiusSM),
           ),
           child: Icon(

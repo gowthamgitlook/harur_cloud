@@ -80,12 +80,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             SizedBox(height: AppSizes.spacingSM),
                             TextButton.icon(
                               onPressed: () {
-                                // TODO: Navigate to add address
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Add address - Coming soon!'),
-                                  ),
-                                );
+                                Navigator.pushNamed(context, '/customer/add-address');
                               },
                               icon: const Icon(Icons.add),
                               label: const Text(AppStrings.addAddress),
@@ -99,7 +94,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       final isSelected = _selectedAddress?.id == address.id;
                       return Card(
                         color: isSelected
-                            ? AppColors.primaryOrange.withOpacity(0.1)
+                            ? AppColors.primaryOrange.withValues(alpha: 0.1)
                             : null,
                         child: InkWell(
                           onTap: () {
@@ -193,7 +188,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     final isSelected = _selectedPaymentMethod == method;
                     return Card(
                       color: isSelected
-                          ? AppColors.primaryOrange.withOpacity(0.1)
+                          ? AppColors.primaryOrange.withValues(alpha: 0.1)
                           : null,
                       child: InkWell(
                         onTap: () {
