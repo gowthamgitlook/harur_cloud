@@ -54,7 +54,7 @@ class PriceBreakdownWidget extends StatelessWidget {
             AppStrings.total,
             cartProvider.total,
             isBold: true,
-            color: AppColors.primaryOrange,
+            color: AppColors.primaryRed,
           ),
         ],
       ),

@@ -33,50 +33,35 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.sendOTP(_phoneController.text.trim());
+    // Prepend +91 if not present for the actual service call
+    final fullPhoneNumber = '+91${_phoneController.text.trim()}';
+    final success = await authProvider.sendOTP(fullPhoneNumber);
 
     setState(() => _isLoading = false);
 
     if (!mounted) return;
 
     if (success) {
-      // Navigate to OTP screen
       Navigator.of(context).pushNamed(
         AppRoutes.otpVerification,
-        arguments: _phoneController.text.trim(),
+        arguments: fullPhoneNumber,
       );
     } else {
-      // Show error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authProvider.errorMessage ?? 'Failed to send OTP'),
           backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
   }
 
-  Future<void> _loginWithGoogle() async {
-    setState(() => _isLoading = true);
-
-    final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.loginWithGoogle();
-
-    setState(() => _isLoading = false);
-
-    if (!mounted) return;
-
-    if (success) {
-      // Navigate to customer home
-      Navigator.of(context).pushReplacementNamed(AppRoutes.customerMain);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Google login failed'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
+  void _fillTestAccount(String phone) {
+    // Remove +91 for the controller
+    final displayPhone = phone.replaceFirst('+91', '');
+    _phoneController.text = displayPhone;
+    setState(() {});
   }
 
   @override
@@ -91,137 +76,124 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(height: AppSizes.spacingXL),
-                // Logo
                 Center(
                   child: Container(
-                    width: AppSizes.imageLG,
-                    height: AppSizes.imageLG,
+                    width: 100,
+                    height: 100,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryOrange.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+                      color: AppColors.primaryRed.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.restaurant_menu,
-                      size: AppSizes.iconXXL,
-                      color: AppColors.primaryOrange,
+                      Icons.restaurant_menu_rounded,
+                      size: 50,
+                      color: AppColors.primaryRed,
                     ),
                   ),
                 ),
                 SizedBox(height: AppSizes.spacingLG),
-                // App Name
                 Text(
                   AppStrings.appName,
-                  style: Theme.of(context).textTheme.displayMedium,
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryRed,
+                      ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: AppSizes.spacingSM),
-                // Tagline
                 Text(
                   AppStrings.appTagline,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: AppSizes.spacingXL),
-                // Login Title
+                SizedBox(height: AppSizes.spacingXXL),
                 Text(
-                  AppStrings.login,
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  'Login or Signup',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 SizedBox(height: AppSizes.spacingSM),
                 Text(
-                  'Enter your phone number to continue',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  'We will send you an OTP on this mobile number',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
                 ),
                 SizedBox(height: AppSizes.spacingLG),
-                // Phone Input
                 CustomTextField(
                   controller: _phoneController,
                   label: AppStrings.phoneNumber,
-                  hint: '+91 9876543210',
+                  hint: '98765 43210',
                   keyboardType: TextInputType.phone,
-                  prefixIcon: const Icon(Icons.phone),
+                  prefixIcon: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    child: Text(
+                      '+91',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9+]')),
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter phone number';
                     }
-                    if (!value.startsWith('+91')) {
-                      return 'Phone number must start with +91';
-                    }
-                    if (value.length != 13) {
-                      return 'Invalid phone number';
+                    if (value.length != 10) {
+                      return 'Enter 10-digit phone number';
                     }
                     return null;
                   },
                 ),
                 SizedBox(height: AppSizes.spacingLG),
-                // Send OTP Button
                 CustomButton(
-                  text: 'Send OTP',
+                  text: _isLoading ? 'Sending...' : 'Continue',
                   onPressed: _isLoading ? null : _sendOTP,
                   isLoading: _isLoading,
                 ),
-                SizedBox(height: AppSizes.spacingLG),
-                // Divider
-                Row(
-                  children: [
-                    Expanded(child: Divider()),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingMD),
-                      child: Text(
-                        'OR',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                      ),
-                    ),
-                    Expanded(child: Divider()),
-                  ],
-                ),
-                SizedBox(height: AppSizes.spacingLG),
-                // Google Login
-                CustomButton(
-                  text: AppStrings.loginWithGoogle,
-                  onPressed: _isLoading ? null : _loginWithGoogle,
-                  isOutlined: true,
-                  icon: Icons.g_mobiledata,
-                ),
-                SizedBox(height: AppSizes.spacingXL),
-                // Info
+                SliverToBoxAdapter(child: SizedBox(height: AppSizes.spacingLG)),
+                // Test Accounts Quick Select
                 Container(
                   padding: EdgeInsets.all(AppSizes.paddingMD),
                   decoration: BoxDecoration(
-                    color: AppColors.info.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppSizes.radiusSM),
-                    border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(AppSizes.radiusMD),
+                    border: Border.all(color: Colors.grey[300]!),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Test Accounts:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: AppColors.info,
-                              fontWeight: FontWeight.w600,
+                      Row(
+                        children: [
+                          Icon(Icons.bug_report, size: 16, color: Colors.grey[600]),
+                          SizedBox(width: 8),
+                          Text(
+                            'Quick Test Accounts (Click to fill)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
                             ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: AppSizes.spacingSM),
-                      _buildTestAccount('Customer', '+919876543210'),
-                      _buildTestAccount('Admin', '+919876543211'),
-                      _buildTestAccount('Delivery', '+919876543212'),
-                      SizedBox(height: AppSizes.spacingSM),
-                      Text(
-                        'OTP: 123456',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.info,
-                              fontWeight: FontWeight.w600,
-                            ),
+                      SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildQuickFill('Customer', '+919876543210'),
+                          _buildQuickFill('Admin', '+919876543211'),
+                          _buildQuickFill('Delivery', '+919876543212'),
+                        ],
                       ),
                     ],
                   ),
@@ -234,27 +206,24 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTestAccount(String role, String phone) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppSizes.spacingXS),
-      child: Row(
-        children: [
-          Icon(Icons.circle, size: 6, color: AppColors.info),
-          SizedBox(width: AppSizes.spacingSM),
-          Text(
-            '$role: ',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.info,
-                  fontWeight: FontWeight.w600,
-                ),
+  Widget _buildQuickFill(String label, String phone) {
+    return InkWell(
+      onTap: () => _fillTestAccount(phone),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.primaryRed.withValues(alpha: 0.3)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: AppColors.primaryRed,
+            fontWeight: FontWeight.w500,
           ),
-          Text(
-            phone,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.info,
-                ),
-          ),
-        ],
+        ),
       ),
     );
   }

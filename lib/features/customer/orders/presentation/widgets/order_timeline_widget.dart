@@ -81,7 +81,7 @@ class OrderTimelineWidget extends StatelessWidget {
     required DateFormat timeFormat,
   }) {
     final color = isCompleted || isCurrent
-        ? AppColors.primaryOrange
+        ? AppColors.primaryRed
         : AppColors.textSecondary.withValues(alpha: 0.3);
 
     return IntrinsicHeight(
@@ -98,7 +98,7 @@ class OrderTimelineWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isCompleted || isCurrent
-                      ? AppColors.primaryOrange
+                      ? AppColors.primaryRed
                       : AppColors.secondaryWhite,
                   border: Border.all(
                     color: color,
@@ -133,7 +133,7 @@ class OrderTimelineWidget extends StatelessWidget {
                     margin: EdgeInsets.symmetric(vertical: AppSizes.spacingXS),
                     decoration: BoxDecoration(
                       color: isCompleted
-                          ? AppColors.primaryOrange
+                          ? AppColors.primaryRed
                           : AppColors.textSecondary.withValues(alpha: 0.3),
                     ),
                   ),
@@ -168,7 +168,7 @@ class OrderTimelineWidget extends StatelessWidget {
                         Text(
                           timeFormat.format(step.time!),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.primaryOrange,
+                                color: AppColors.primaryRed,
                                 fontWeight: FontWeight.w600,
                               ),
                         ),
@@ -189,7 +189,7 @@ class OrderTimelineWidget extends StatelessWidget {
                         vertical: AppSizes.paddingXS,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryOrange.withValues(alpha: 0.1),
+                        color: AppColors.primaryRed.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(AppSizes.radiusXS),
                       ),
                       child: Row(
@@ -201,7 +201,7 @@ class OrderTimelineWidget extends StatelessWidget {
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.primaryOrange,
+                                AppColors.primaryRed,
                               ),
                             ),
                           ),
@@ -209,7 +209,7 @@ class OrderTimelineWidget extends StatelessWidget {
                           Text(
                             'In Progress',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.primaryOrange,
+                                  color: AppColors.primaryRed,
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),

@@ -50,12 +50,12 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                color: AppColors.primaryOrange.withValues(alpha: 0.1),
+                color: AppColors.primaryRed.withValues(alpha: 0.1),
                 child: Center(
                   child: Icon(
                     Icons.restaurant,
                     size: AppSizes.iconXXL * 2,
-                    color: AppColors.primaryOrange.withValues(alpha: 0.3),
+                    color: AppColors.primaryRed.withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -98,7 +98,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                             vertical: AppSizes.paddingXS,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryOrange,
+                            color: AppColors.primaryRed,
                             borderRadius: BorderRadius.circular(AppSizes.radiusSM),
                           ),
                           child: Row(
@@ -186,7 +186,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                           onSelected: (selected) {
                             setState(() => _selectedSpiceLevel = level);
                           },
-                          selectedColor: AppColors.primaryOrange,
+                          selectedColor: AppColors.primaryRed,
                           labelStyle: TextStyle(
                             color: isSelected ? AppColors.textLight : AppColors.textPrimary,
                           ),
@@ -218,7 +218,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                             }
                           });
                         },
-                        activeColor: AppColors.primaryOrange,
+                        activeColor: AppColors.primaryRed,
                         contentPadding: EdgeInsets.zero,
                       );
                     }),

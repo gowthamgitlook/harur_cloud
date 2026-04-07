@@ -126,7 +126,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         selected: isSelected,
         onSelected: (_) => onTap(),
         backgroundColor: Colors.grey[200],
-        selectedColor: color ?? AppColors.primaryOrange,
+        selectedColor: color ?? AppColors.primaryRed,
         labelStyle: TextStyle(
           color: isSelected ? Colors.white : Colors.black87,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -215,12 +215,12 @@ class _AdminOrderCard extends StatelessWidget {
               SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.delivery_dining, size: 16, color: AppColors.primaryOrange),
+                  Icon(Icons.delivery_dining, size: 16, color: AppColors.primaryRed),
                   SizedBox(width: 4),
                   Text(
                     order.deliveryPartnerName!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.primaryOrange,
+                          color: AppColors.primaryRed,
                         ),
                   ),
                 ],
@@ -239,7 +239,7 @@ class _AdminOrderCard extends StatelessWidget {
                       icon: const Icon(Icons.edit, size: 16),
                       label: const Text('Update Status'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primaryOrange,
+                        foregroundColor: AppColors.primaryRed,
                       ),
                     ),
                   ),
@@ -251,7 +251,7 @@ class _AdminOrderCard extends StatelessWidget {
                       icon: const Icon(Icons.person_add, size: 16),
                       label: const Text('Assign'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryOrange,
+                        backgroundColor: AppColors.primaryRed,
                       ),
                     ),
                   ),
@@ -345,7 +345,7 @@ class _AdminOrderCard extends StatelessWidget {
           children: deliveryPartners.map((partner) {
             return ListTile(
               leading: CircleAvatar(
-                backgroundColor: AppColors.primaryOrange,
+                backgroundColor: AppColors.primaryRed,
                 child: Icon(Icons.delivery_dining, color: Colors.white),
               ),
               title: Text(partner.name),

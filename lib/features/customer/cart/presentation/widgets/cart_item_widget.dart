@@ -90,7 +90,7 @@ class CartItemWidget extends StatelessWidget {
                       Text(
                         cartItem.spiceLevel.displayName,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.primaryOrange,
+                              color: AppColors.primaryRed,
                               fontWeight: FontWeight.w600,
                             ),
                       ),
@@ -149,7 +149,7 @@ class CartItemWidget extends StatelessWidget {
                       Text(
                         '₹${cartItem.totalPrice.toStringAsFixed(0)}',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: AppColors.primaryOrange,
+                              color: AppColors.primaryRed,
                               fontWeight: FontWeight.bold,
                             ),
                       ),

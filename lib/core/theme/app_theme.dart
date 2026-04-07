@@ -14,7 +14,7 @@ class AppTheme {
 
       // Color Scheme
       colorScheme: ColorScheme.light(
-        primary: AppColors.primaryOrange,
+        primary: AppColors.primaryRed,
         secondary: AppColors.accentDarkGray,
         surface: AppColors.surfaceLight,
         error: AppColors.error,
@@ -32,11 +32,11 @@ class AppTheme {
         elevation: 0,
         backgroundColor: AppColors.surfaceLight,
         foregroundColor: AppColors.textPrimary,
-        centerTitle: true,
+        centerTitle: false, // More modern left-aligned
         titleTextStyle: TextStyle(
           color: AppColors.textPrimary,
           fontSize: AppSizes.fontXL,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.bold,
         ),
         iconTheme: const IconThemeData(
           color: AppColors.textPrimary,
@@ -50,6 +50,7 @@ class AppTheme {
           fontSize: AppSizes.fontHeading,
           fontWeight: FontWeight.bold,
           color: AppColors.textPrimary,
+          letterSpacing: -0.5,
         ),
         displayMedium: TextStyle(
           fontSize: AppSizes.fontTitle,
@@ -58,12 +59,12 @@ class AppTheme {
         ),
         displaySmall: TextStyle(
           fontSize: AppSizes.fontXXL,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
         ),
         headlineMedium: TextStyle(
           fontSize: AppSizes.fontXL,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
         ),
         titleLarge: TextStyle(
@@ -73,7 +74,7 @@ class AppTheme {
         ),
         titleMedium: TextStyle(
           fontSize: AppSizes.fontMD,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
         bodyLarge: TextStyle(
@@ -97,26 +98,26 @@ class AppTheme {
       // Button Themes
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryOrange,
+          backgroundColor: AppColors.primaryRed,
           foregroundColor: AppColors.textLight,
-          elevation: AppSizes.cardElevation,
+          elevation: 0, // Zomato uses flat buttons
           minimumSize: Size(AppSizes.buttonMinWidth, AppSizes.buttonHeightMD),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSizes.radiusMD),
           ),
           textStyle: TextStyle(
             fontSize: AppSizes.fontLG,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primaryOrange,
+          foregroundColor: AppColors.primaryRed,
           side: const BorderSide(
-            color: AppColors.primaryOrange,
-            width: 1.5,
+            color: AppColors.primaryRed,
+            width: 1.0,
           ),
           minimumSize: Size(AppSizes.buttonMinWidth, AppSizes.buttonHeightMD),
           shape: RoundedRectangleBorder(
@@ -124,17 +125,17 @@ class AppTheme {
           ),
           textStyle: TextStyle(
             fontSize: AppSizes.fontLG,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primaryOrange,
+          foregroundColor: AppColors.primaryRed,
           textStyle: TextStyle(
             fontSize: AppSizes.fontLG,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
@@ -162,8 +163,8 @@ class AppTheme {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusMD),
           borderSide: BorderSide(
-            color: AppColors.primaryOrange,
-            width: 2.0,
+            color: AppColors.primaryRed,
+            width: 1.5,
           ),
         ),
         errorBorder: OutlineInputBorder(
@@ -176,14 +177,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSizes.radiusMD),
           borderSide: BorderSide(
             color: AppColors.error,
-            width: 2.0,
+            width: 1.5,
           ),
         ),
         hintStyle: TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: AppSizes.fontMD,
-        ),
-        labelStyle: TextStyle(
           color: AppColors.textSecondary,
           fontSize: AppSizes.fontMD,
         ),
@@ -191,10 +188,11 @@ class AppTheme {
 
       // Card Theme
       cardTheme: CardThemeData(
-        elevation: AppSizes.cardElevation,
+        elevation: 0,
         color: AppColors.surfaceLight,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMD),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+          side: BorderSide(color: AppColors.divider, width: 0.5),
         ),
         margin: EdgeInsets.all(AppSizes.paddingSM),
       ),
@@ -202,55 +200,62 @@ class AppTheme {
       // Bottom Navigation Bar Theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surfaceLight,
-        selectedItemColor: AppColors.primaryOrange,
+        selectedItemColor: AppColors.primaryRed,
         unselectedItemColor: AppColors.textSecondary,
         selectedLabelStyle: TextStyle(
           fontSize: AppSizes.fontSM,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.bold,
         ),
         unselectedLabelStyle: TextStyle(
           fontSize: AppSizes.fontSM,
         ),
         type: BottomNavigationBarType.fixed,
-        elevation: 8.0,
+        elevation: 10.0,
       ),
 
       // Floating Action Button Theme
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primaryOrange,
+        backgroundColor: AppColors.primaryRed,
         foregroundColor: AppColors.textLight,
-        elevation: AppSizes.cardElevationHigh,
+        elevation: 4.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+        ),
       ),
 
       // Divider Theme
       dividerTheme: DividerThemeData(
         color: AppColors.divider,
-        thickness: AppSizes.dividerThickness,
+        thickness: 0.5,
         space: AppSizes.spacingMD,
       ),
 
       // Chip Theme
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.placeholder,
-        selectedColor: AppColors.primaryOrange,
+        backgroundColor: AppColors.surfaceLight,
+        selectedColor: AppColors.primaryRed,
+        disabledColor: AppColors.placeholder,
         labelStyle: TextStyle(
           color: AppColors.textPrimary,
           fontSize: AppSizes.fontSM,
+          fontWeight: FontWeight.w500,
         ),
         secondaryLabelStyle: TextStyle(
           color: AppColors.textLight,
           fontSize: AppSizes.fontSM,
+          fontWeight: FontWeight.bold,
         ),
-        padding: EdgeInsets.all(AppSizes.paddingSM),
+        padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingSM, vertical: AppSizes.paddingXS),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusSM),
+          side: BorderSide(color: AppColors.divider, width: 0.5),
         ),
       ),
 
       // Dialog Theme
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surfaceLight,
-        elevation: AppSizes.cardElevationHigh,
+        elevation: 10,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusLG),
         ),
@@ -264,10 +269,25 @@ class AppTheme {
           fontSize: AppSizes.fontMD,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusSM),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMD),
         ),
         behavior: SnackBarBehavior.floating,
       ),
+    );
+  }
+
+  // Dark Theme (Optional, but good to have)
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.dark(
+        primary: AppColors.primaryRed,
+        secondary: AppColors.primaryRed,
+        surface: AppColors.surfaceDark,
+        background: AppColors.backgroundDark,
+      ),
+      // ... similar refinements for dark theme if needed
     );
   }
 }

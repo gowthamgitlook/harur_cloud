@@ -28,7 +28,7 @@ class _DeliveryMainScreenState extends State<DeliveryMainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
-        selectedItemColor: AppColors.primaryOrange,
+        selectedItemColor: AppColors.primaryRed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.assignment),

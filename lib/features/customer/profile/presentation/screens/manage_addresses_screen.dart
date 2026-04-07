@@ -32,7 +32,7 @@ class ManageAddressesScreen extends StatelessWidget {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddAddressDialog(context),
-        backgroundColor: AppColors.primaryOrange,
+        backgroundColor: AppColors.primaryRed,
         icon: const Icon(Icons.add, color: AppColors.textLight),
         label: const Text(
           'Add Address',
@@ -73,7 +73,7 @@ class ManageAddressesScreen extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: const Text('Add Address'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryOrange,
+                backgroundColor: AppColors.primaryRed,
                 foregroundColor: AppColors.textLight,
               ),
             ),
@@ -104,7 +104,7 @@ class ManageAddressesScreen extends StatelessWidget {
                     vertical: AppSizes.paddingXS,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryOrange,
+                    color: AppColors.primaryRed,
                     borderRadius: BorderRadius.circular(AppSizes.radiusXS),
                   ),
                   child: Text(
@@ -121,7 +121,7 @@ class ManageAddressesScreen extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.edit, size: 20),
                       onPressed: () => _showEditAddressDialog(context, address),
-                      color: AppColors.primaryOrange,
+                      color: AppColors.primaryRed,
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete, size: 20),
@@ -143,7 +143,7 @@ class ManageAddressesScreen extends StatelessWidget {
                 Icon(
                   Icons.location_on,
                   size: AppSizes.iconMD,
-                  color: AppColors.primaryOrange,
+                  color: AppColors.primaryRed,
                 ),
                 SizedBox(width: AppSizes.spacingSM),
                 Expanded(

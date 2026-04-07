@@ -35,9 +35,9 @@ class CustomButton extends StatelessWidget {
         child: OutlinedButton(
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
-            foregroundColor: textColor ?? AppColors.primaryOrange,
+            foregroundColor: textColor ?? AppColors.primaryRed,
             side: BorderSide(
-              color: textColor ?? AppColors.primaryOrange,
+              color: textColor ?? AppColors.primaryRed,
             ),
           ),
           child: _buildChild(),
@@ -51,7 +51,7 @@ class CustomButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primaryOrange,
+          backgroundColor: backgroundColor ?? AppColors.primaryRed,
           foregroundColor: textColor ?? AppColors.textLight,
         ),
         child: _buildChild(),
@@ -67,7 +67,7 @@ class CustomButton extends StatelessWidget {
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor: AlwaysStoppedAnimation<Color>(
-            isOutlined ? AppColors.primaryOrange : AppColors.textLight,
+            isOutlined ? AppColors.primaryRed : AppColors.textLight,
           ),
         ),
       );

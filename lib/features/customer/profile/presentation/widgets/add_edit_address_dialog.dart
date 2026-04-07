@@ -98,7 +98,7 @@ class _AddEditAddressDialogState extends State<AddEditAddressDialog> {
                         onSelected: (selected) {
                           setState(() => _selectedLabel = label);
                         },
-                        selectedColor: AppColors.primaryOrange,
+                        selectedColor: AppColors.primaryRed,
                         labelStyle: TextStyle(
                           color: isSelected ? AppColors.textLight : AppColors.textPrimary,
                         ),

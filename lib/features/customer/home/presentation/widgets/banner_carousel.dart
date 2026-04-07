@@ -74,7 +74,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
                 itemCount: widget.banners.length,
                 itemBuilder: (context, index) {
                   return Container(
-                    color: AppColors.primaryOrange.withValues(alpha: 0.1),
+                    color: AppColors.primaryRed.withValues(alpha: 0.1),
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -82,13 +82,13 @@ class _BannerCarouselState extends State<BannerCarousel> {
                           Icon(
                             Icons.restaurant,
                             size: AppSizes.iconXXL,
-                            color: AppColors.primaryOrange,
+                            color: AppColors.primaryRed,
                           ),
                           SizedBox(height: AppSizes.spacingSM),
                           Text(
                             'Delicious Food Awaits!',
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: AppColors.primaryOrange,
+                                  color: AppColors.primaryRed,
                                   fontWeight: FontWeight.bold,
                                 ),
                           ),
@@ -112,7 +112,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
             controller: _pageController,
             count: widget.banners.length,
             effect: ExpandingDotsEffect(
-              activeDotColor: AppColors.primaryOrange,
+              activeDotColor: AppColors.primaryRed,
               dotColor: AppColors.divider,
               dotHeight: 8,
               dotWidth: 8,

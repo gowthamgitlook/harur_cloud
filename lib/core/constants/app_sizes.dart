@@ -60,7 +60,9 @@ class AppSizes {
   // Food Item Card
   static const double foodCardWidth = 160.0;
   static const double foodCardHeight = 240.0;
+  static const double foodCardHeightWide = 140.0;
   static const double foodImageHeight = 120.0;
+  static const double foodImageSizeWide = 120.0;
 
   // Banner
   static const double bannerHeight = 180.0;

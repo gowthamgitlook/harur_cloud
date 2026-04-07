@@ -32,7 +32,7 @@ class CustomerMainScreen extends StatelessWidget {
                 currentIndex: navProvider.selectedIndex,
                 onTap: (index) => navProvider.setSelectedIndex(index),
                 type: BottomNavigationBarType.fixed,
-                selectedItemColor: AppColors.primaryOrange,
+                selectedItemColor: AppColors.primaryRed,
                 items: [
                   const BottomNavigationBarItem(
                     icon: Icon(Icons.home),

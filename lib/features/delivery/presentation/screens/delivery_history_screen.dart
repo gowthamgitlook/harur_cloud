@@ -61,7 +61,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
                         child: Icon(
                           Icons.delivery_dining,
                           size: AppSizes.iconXL,
-                          color: AppColors.primaryOrange,
+                          color: AppColors.primaryRed,
                         ),
                       ),
                       SizedBox(height: AppSizes.spacingMD),

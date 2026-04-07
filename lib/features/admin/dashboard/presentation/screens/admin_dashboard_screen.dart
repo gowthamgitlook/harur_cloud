@@ -82,7 +82,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         title: 'Active Orders',
                         value: '${stats['activeOrders'] ?? 0}',
                         icon: Icons.pending_actions,
-                        color: AppColors.primaryOrange,
+                        color: AppColors.primaryRed,
                         isLive: true,
                       ),
                       _StatCard(
@@ -321,7 +321,7 @@ class _PopularItemCard extends StatelessWidget {
                 Text(
                   '$count orders',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.primaryOrange,
+                        color: AppColors.primaryRed,
                       ),
                 ),
                 Text(

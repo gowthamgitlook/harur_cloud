@@ -29,13 +29,13 @@ class CategoryChip extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.primaryOrange
-                : AppColors.primaryOrange.withValues(alpha: 0.1),
+                ? AppColors.primaryRed
+                : AppColors.primaryRed.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppSizes.radiusLG),
             border: Border.all(
               color: isSelected
-                  ? AppColors.primaryOrange
-                  : AppColors.primaryOrange.withValues(alpha: 0.3),
+                  ? AppColors.primaryRed
+                  : AppColors.primaryRed.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -45,14 +45,14 @@ class CategoryChip extends StatelessWidget {
                 Icon(
                   icon,
                   size: AppSizes.iconSM,
-                  color: isSelected ? AppColors.textLight : AppColors.primaryOrange,
+                  color: isSelected ? AppColors.textLight : AppColors.primaryRed,
                 ),
                 SizedBox(width: AppSizes.spacingXS),
               ],
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: isSelected ? AppColors.textLight : AppColors.primaryOrange,
+                      color: isSelected ? AppColors.textLight : AppColors.primaryRed,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     ),
               ),

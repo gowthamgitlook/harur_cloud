@@ -34,7 +34,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primaryOrange,
+        selectedItemColor: AppColors.primaryRed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
@@ -78,7 +78,7 @@ class _ProfileTab extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: AppSizes.avatarLG,
-                backgroundColor: AppColors.primaryOrange,
+                backgroundColor: AppColors.primaryRed,
                 child: Icon(
                   Icons.admin_panel_settings,
                   size: AppSizes.iconXL,

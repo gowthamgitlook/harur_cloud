@@ -57,11 +57,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: AppSizes.avatarXL,
-                    backgroundColor: AppColors.primaryOrange.withValues(alpha: 0.1),
+                    backgroundColor: AppColors.primaryRed.withValues(alpha: 0.1),
                     child: Icon(
                       Icons.person,
                       size: AppSizes.iconXXL * 1.5,
-                      color: AppColors.primaryOrange,
+                      color: AppColors.primaryRed,
                     ),
                   ),
                   Positioned(
@@ -70,7 +70,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: Container(
                       padding: EdgeInsets.all(AppSizes.paddingSM),
                       decoration: const BoxDecoration(
-                        color: AppColors.primaryOrange,
+                        color: AppColors.primaryRed,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(

@@ -42,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (value) {
                       themeProvider.toggleTheme();
                     },
-                    activeThumbColor: AppColors.primaryOrange,
+                    activeThumbColor: AppColors.primaryRed,
                   ),
                 ),
 
@@ -66,7 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         });
                       }
                     },
-                    activeThumbColor: AppColors.primaryOrange,
+                    activeThumbColor: AppColors.primaryRed,
                   ),
                 ),
 
@@ -80,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: _notificationsEnabled
                         ? (value) => setState(() => _orderUpdates = value)
                         : null,
-                    activeThumbColor: AppColors.primaryOrange,
+                    activeThumbColor: AppColors.primaryRed,
                   ),
                   enabled: _notificationsEnabled,
                 ),
@@ -95,7 +95,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: _notificationsEnabled
                         ? (value) => setState(() => _promotionalOffers = value)
                         : null,
-                    activeThumbColor: AppColors.primaryOrange,
+                    activeThumbColor: AppColors.primaryRed,
                   ),
                   enabled: _notificationsEnabled,
                 ),
@@ -110,7 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: _notificationsEnabled
                         ? (value) => setState(() => _soundEnabled = value)
                         : null,
-                    activeThumbColor: AppColors.primaryOrange,
+                    activeThumbColor: AppColors.primaryRed,
                   ),
                   enabled: _notificationsEnabled,
                 ),
@@ -223,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppColors.primaryOrange,
+              color: AppColors.primaryRed,
               fontWeight: FontWeight.w600,
             ),
       ),
@@ -246,12 +246,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       leading: Container(
         padding: EdgeInsets.all(AppSizes.paddingSM),
         decoration: BoxDecoration(
-          color: (textColor ?? AppColors.primaryOrange).withValues(alpha: 0.1),
+          color: (textColor ?? AppColors.primaryRed).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppSizes.radiusSM),
         ),
         child: Icon(
           icon,
-          color: textColor ?? AppColors.primaryOrange,
+          color: textColor ?? AppColors.primaryRed,
           size: AppSizes.iconMD,
         ),
       ),

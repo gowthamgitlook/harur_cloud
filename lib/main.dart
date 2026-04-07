@@ -6,12 +6,14 @@ import 'app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  try {
-    await Firebase.initializeApp();
-  } catch (e) {
-    debugPrint('Firebase initialization error: $e');
-    // Note: This might fail if google-services.json/GoogleService-Info.plist are missing
+  // Initialize Firebase only if not in mock mode or if config exists
+  if (!AppConfig.useMockServices) {
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      debugPrint('Firebase initialization error: $e');
+      // If Firebase is mandatory for production, you might want to show a specific error UI
+    }
   }
 
   // Set preferred orientations (portrait only)

@@ -22,7 +22,7 @@ class LoadingIndicator extends StatelessWidget {
             width: size ?? AppSizes.loaderMD,
             height: size ?? AppSizes.loaderMD,
             child: const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryOrange),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryRed),
               strokeWidth: 3,
             ),
           ),

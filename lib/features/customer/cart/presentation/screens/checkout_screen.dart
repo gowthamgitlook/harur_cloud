@@ -94,7 +94,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       final isSelected = _selectedAddress?.id == address.id;
                       return Card(
                         color: isSelected
-                            ? AppColors.primaryOrange.withValues(alpha: 0.1)
+                            ? AppColors.primaryRed.withValues(alpha: 0.1)
                             : null,
                         child: InkWell(
                           onTap: () {
@@ -115,7 +115,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       _selectedAddress = address;
                                     });
                                   },
-                                  activeColor: AppColors.primaryOrange,
+                                  activeColor: AppColors.primaryRed,
                                 ),
                                 SizedBox(width: AppSizes.spacingSM),
                                 Expanded(
@@ -130,7 +130,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                               vertical: AppSizes.paddingXS,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: AppColors.primaryOrange,
+                                              color: AppColors.primaryRed,
                                               borderRadius: BorderRadius.circular(
                                                 AppSizes.radiusXS,
                                               ),
@@ -188,7 +188,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     final isSelected = _selectedPaymentMethod == method;
                     return Card(
                       color: isSelected
-                          ? AppColors.primaryOrange.withValues(alpha: 0.1)
+                          ? AppColors.primaryRed.withValues(alpha: 0.1)
                           : null,
                       child: InkWell(
                         onTap: () {
@@ -208,13 +208,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     _selectedPaymentMethod = value!;
                                   });
                                 },
-                                activeColor: AppColors.primaryOrange,
+                                activeColor: AppColors.primaryRed,
                               ),
                               Icon(
                                 method.icon,
                                 size: AppSizes.iconMD,
                                 color: isSelected
-                                    ? AppColors.primaryOrange
+                                    ? AppColors.primaryRed
                                     : AppColors.textSecondary,
                               ),
                               SizedBox(width: AppSizes.spacingMD),

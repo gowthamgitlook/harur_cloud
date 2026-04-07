@@ -158,13 +158,13 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   width: AppSizes.imageLG,
                   height: AppSizes.imageLG,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryOrange.withValues(alpha: 0.1),
+                    color: AppColors.primaryRed.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.message,
                     size: AppSizes.iconXXL,
-                    color: AppColors.primaryOrange,
+                    color: AppColors.primaryRed,
                   ),
                 ),
               ),
@@ -188,7 +188,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               Text(
                 widget.phoneNumber,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.primaryOrange,
+                      color: AppColors.primaryRed,
                       fontWeight: FontWeight.w600,
                     ),
                 textAlign: TextAlign.center,
@@ -209,9 +209,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   activeFillColor: AppColors.surfaceLight,
                   inactiveFillColor: AppColors.surfaceLight,
                   selectedFillColor: AppColors.surfaceLight,
-                  activeColor: AppColors.primaryOrange,
+                  activeColor: AppColors.primaryRed,
                   inactiveColor: AppColors.divider,
-                  selectedColor: AppColors.primaryOrange,
+                  selectedColor: AppColors.primaryRed,
                 ),
                 enableActiveFill: true,
                 onCompleted: (value) => _verifyOTP(),

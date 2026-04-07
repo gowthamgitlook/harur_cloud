@@ -45,8 +45,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.primaryOrange,
-                      AppColors.primaryOrange.withValues(alpha: 0.8),
+                      AppColors.primaryRed,
+                      AppColors.primaryRed.withValues(alpha: 0.8),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -70,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Icon(
                           Icons.person,
                           size: AppSizes.iconXXL,
-                          color: AppColors.primaryOrange,
+                          color: AppColors.primaryRed,
                         ),
                       ),
                     ),
@@ -150,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       trailing: Text(
                         '${user?.addresses.length ?? 0}',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: AppColors.primaryOrange,
+                              color: AppColors.primaryRed,
                               fontWeight: FontWeight.w600,
                             ),
                       ),
@@ -302,12 +302,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: Container(
           padding: EdgeInsets.all(AppSizes.paddingSM),
           decoration: BoxDecoration(
-            color: AppColors.primaryOrange.withValues(alpha: 0.1),
+            color: AppColors.primaryRed.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppSizes.radiusSM),
           ),
           child: Icon(
             icon,
-            color: AppColors.primaryOrange,
+            color: AppColors.primaryRed,
             size: AppSizes.iconMD,
           ),
         ),
@@ -386,7 +386,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Icon(
               Icons.restaurant,
-              color: AppColors.primaryOrange,
+              color: AppColors.primaryRed,
               size: AppSizes.iconLG,
             ),
             SizedBox(width: AppSizes.spacingSM),

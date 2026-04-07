@@ -119,7 +119,7 @@ class _ActiveDeliveryCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryOrange.withValues(alpha: 0.1),
+                    color: AppColors.primaryRed.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -129,7 +129,7 @@ class _ActiveDeliveryCard extends StatelessWidget {
                         width: 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryOrange,
+                          color: AppColors.primaryRed,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -137,7 +137,7 @@ class _ActiveDeliveryCard extends StatelessWidget {
                       Text(
                         'In Progress',
                         style: TextStyle(
-                          color: AppColors.primaryOrange,
+                          color: AppColors.primaryRed,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),

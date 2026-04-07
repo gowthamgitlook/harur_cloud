@@ -90,8 +90,8 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primaryOrange,
-                    AppColors.primaryOrange.withValues(alpha: 0.8),
+                    AppColors.primaryRed,
+                    AppColors.primaryRed.withValues(alpha: 0.8),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -187,7 +187,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                         children: [
                           Icon(
                             Icons.location_on,
-                            color: AppColors.primaryOrange,
+                            color: AppColors.primaryRed,
                             size: AppSizes.iconMD,
                           ),
                           SizedBox(width: AppSizes.spacingMD),
@@ -255,7 +255,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                 width: 50,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryOrange.withValues(alpha: 0.1),
+                                  color: AppColors.primaryRed.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(AppSizes.radiusSM),
                                 ),
                                 child: Center(
@@ -263,7 +263,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                     '${item.quantity}x',
                                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                           fontWeight: FontWeight.w700,
-                                          color: AppColors.primaryOrange,
+                                          color: AppColors.primaryRed,
                                         ),
                                   ),
                                 ),
@@ -460,7 +460,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
                 color: isDiscount
                     ? AppColors.success
-                    : (isTotal ? AppColors.primaryOrange : AppColors.textPrimary),
+                    : (isTotal ? AppColors.primaryRed : AppColors.textPrimary),
               ),
         ),
       ],

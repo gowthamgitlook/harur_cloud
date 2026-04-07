@@ -109,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     child: Icon(
                       Icons.restaurant_menu,
                       size: AppSizes.iconXXL,
-                      color: AppColors.primaryOrange,
+                      color: AppColors.primaryRed,
                     ),
                   ),
                   SizedBox(height: AppSizes.spacingLG),

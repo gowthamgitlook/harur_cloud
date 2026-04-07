@@ -105,7 +105,7 @@ class OrderCardWidget extends StatelessWidget {
                 Text(
                   '+${order.items.length - 2} more item${order.items.length - 2 > 1 ? 's' : ''}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.primaryOrange,
+                        color: AppColors.primaryRed,
                         fontWeight: FontWeight.w600,
                       ),
                 ),
@@ -134,7 +134,7 @@ class OrderCardWidget extends StatelessWidget {
                         '₹${order.totalPrice.toStringAsFixed(0)}',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.w700,
-                              color: AppColors.primaryOrange,
+                              color: AppColors.primaryRed,
                             ),
                       ),
                     ],
@@ -158,7 +158,7 @@ class OrderCardWidget extends StatelessWidget {
                         ElevatedButton(
                           onPressed: onReorder,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryOrange,
+                            backgroundColor: AppColors.primaryRed,
                             foregroundColor: AppColors.textLight,
                           ),
                           child: const Text('Reorder'),
@@ -169,8 +169,8 @@ class OrderCardWidget extends StatelessWidget {
                       OutlinedButton(
                         onPressed: onTap,
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primaryOrange,
-                          side: const BorderSide(color: AppColors.primaryOrange),
+                          foregroundColor: AppColors.primaryRed,
+                          side: const BorderSide(color: AppColors.primaryRed),
                         ),
                         child: const Text('Track'),
                       ),
@@ -202,8 +202,8 @@ class OrderCardWidget extends StatelessWidget {
         icon = Icons.restaurant;
         break;
       case OrderStatus.outForDelivery:
-        backgroundColor = AppColors.primaryOrange.withValues(alpha: 0.1);
-        textColor = AppColors.primaryOrange;
+        backgroundColor = AppColors.primaryRed.withValues(alpha: 0.1);
+        textColor = AppColors.primaryRed;
         icon = Icons.delivery_dining;
         break;
       case OrderStatus.delivered:

@@ -14,7 +14,7 @@ class DarkTheme {
 
       // Color Scheme
       colorScheme: ColorScheme.dark(
-        primary: AppColors.primaryOrange,
+        primary: AppColors.primaryRed,
         secondary: AppColors.accentDarkGray,
         surface: AppColors.surfaceDark,
         error: AppColors.error,
@@ -98,7 +98,7 @@ class DarkTheme {
       // Button Themes
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryOrange,
+          backgroundColor: AppColors.primaryRed,
           foregroundColor: AppColors.textLight,
           elevation: AppSizes.cardElevation,
           minimumSize: Size(AppSizes.buttonMinWidth, AppSizes.buttonHeightMD),
@@ -114,9 +114,9 @@ class DarkTheme {
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primaryOrange,
+          foregroundColor: AppColors.primaryRed,
           side: const BorderSide(
-            color: AppColors.primaryOrange,
+            color: AppColors.primaryRed,
             width: 1.5,
           ),
           minimumSize: Size(AppSizes.buttonMinWidth, AppSizes.buttonHeightMD),
@@ -132,7 +132,7 @@ class DarkTheme {
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primaryOrange,
+          foregroundColor: AppColors.primaryRed,
           textStyle: TextStyle(
             fontSize: AppSizes.fontLG,
             fontWeight: FontWeight.w600,
@@ -163,7 +163,7 @@ class DarkTheme {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusMD),
           borderSide: BorderSide(
-            color: AppColors.primaryOrange,
+            color: AppColors.primaryRed,
             width: 2.0,
           ),
         ),
@@ -203,7 +203,7 @@ class DarkTheme {
       // Bottom Navigation Bar Theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surfaceDark,
-        selectedItemColor: AppColors.primaryOrange,
+        selectedItemColor: AppColors.primaryRed,
         unselectedItemColor: AppColors.textSecondary,
         selectedLabelStyle: TextStyle(
           fontSize: AppSizes.fontSM,
@@ -218,7 +218,7 @@ class DarkTheme {
 
       // Floating Action Button Theme
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primaryOrange,
+        backgroundColor: AppColors.primaryRed,
         foregroundColor: AppColors.textLight,
         elevation: AppSizes.cardElevationHigh,
       ),
@@ -233,7 +233,7 @@ class DarkTheme {
       // Chip Theme
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.accentDarkGray,
-        selectedColor: AppColors.primaryOrange,
+        selectedColor: AppColors.primaryRed,
         labelStyle: TextStyle(
           color: AppColors.textLight,
           fontSize: AppSizes.fontSM,
