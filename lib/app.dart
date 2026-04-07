@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/dark_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'features/customer/home/data/repositories/menu_repository.dart';
 import 'features/customer/home/providers/menu_provider.dart';
 import 'features/customer/cart/providers/cart_provider.dart';
 import 'features/customer/orders/providers/order_provider.dart';
@@ -15,7 +16,12 @@ import 'features/admin/menu_management/providers/admin_menu_provider.dart';
 import 'features/delivery/providers/delivery_provider.dart';
 
 class HarurCloudKitchenApp extends StatelessWidget {
-  const HarurCloudKitchenApp({super.key});
+  final IMenuRepository menuRepository;
+
+  const HarurCloudKitchenApp({
+    super.key,
+    required this.menuRepository,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +42,9 @@ class HarurCloudKitchenApp extends StatelessWidget {
           create: (_) => AuthProvider(),
         ),
 
-        // Menu Provider
+        // Menu Provider (Injected Repository)
         ChangeNotifierProvider(
-          create: (_) => MenuProvider(),
+          create: (_) => MenuProvider(menuRepository: menuRepository),
         ),
 
         // Cart Provider

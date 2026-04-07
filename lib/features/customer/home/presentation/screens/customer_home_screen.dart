@@ -41,6 +41,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     final errorMessage = context.select<MenuProvider, String?>((p) => p.errorMessage);
     final banners = context.select<MenuProvider, List<String>>((p) => p.banners);
     final selectedCategory = context.select<MenuProvider, FoodCategory?>((p) => p.selectedCategory);
+    final isSearchLoading = context.select<MenuProvider, bool>((p) => p.isSearchLoading);
     final filteredRestaurants = context.select<MenuProvider, List>((p) => p.filteredRestaurants);
 
     return Scaffold(
@@ -67,7 +68,14 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     onChanged: (value) => context.read<MenuProvider>().searchItems(value),
                     decoration: InputDecoration(
                       hintText: 'Search for food or restaurants',
-                      prefixIcon: const Icon(Icons.search),
+                      prefixIcon: isSearchLoading 
+                        ? Container(
+                            padding: const EdgeInsets.all(12),
+                            width: 20,
+                            height: 20,
+                            child: const CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.search),
                       filled: true,
                       fillColor: Theme.of(context).cardColor,
                     ),

@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../../../../data/mock/mock_menu_data.dart';
-import '../../../../data/services/menu_service.dart';
-import '../../../../config/app_config.dart';
 import '../../../../shared/enums/food_category.dart';
 import '../../../../shared/models/menu_item_model.dart';
 import '../../../../shared/models/restaurant_model.dart';
+import '../data/repositories/menu_repository.dart';
 
 class MenuProvider extends ChangeNotifier {
-  final IMenuService _menuService;
+  // Dependency Inversion: We only know the INTERFACE, not the implementation.
+  final IMenuRepository _menuRepository;
 
   List<MenuItemModel> _allItems = [];
   List<MenuItemModel> _filteredItems = [];
@@ -17,98 +16,106 @@ class MenuProvider extends ChangeNotifier {
   List<String> _banners = [];
   FoodCategory? _selectedCategory;
   String _searchQuery = '';
+  
+  // UI State
   bool _isLoading = false;
+  bool _isSearchLoading = false; // New: For debounce UX
   String? _errorMessage;
   Timer? _searchDebounce;
 
-  MenuProvider({IMenuService? menuService})
-      : _menuService = menuService ??
-            (AppConfig.useMockServices ? FirestoreMenuService() : FirestoreMenuService());
+  MenuProvider({required IMenuRepository menuRepository})
+      : _menuRepository = menuRepository;
 
   // Getters
   List<MenuItemModel> get allItems => _allItems;
   List<MenuItemModel> get filteredItems => _filteredItems;
   List<RestaurantModel> get allRestaurants => _allRestaurants;
   List<RestaurantModel> get filteredRestaurants => _filteredRestaurants;
-  List<MenuItemModel> get popularItems => _allItems.where((item) => item.isPopular && item.isAvailable).toList();
   List<String> get banners => _banners;
   FoodCategory? get selectedCategory => _selectedCategory;
   String get searchQuery => _searchQuery;
   bool get isLoading => _isLoading;
+  bool get isSearchLoading => _isSearchLoading;
   String? get errorMessage => _errorMessage;
 
-  // Initialize - Load menu items and restaurants
+  /// Fetch initial data (Cold Start)
   Future<void> initialize() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      if (AppConfig.useMockServices) {
-        // Simulate network delay for realistic shimmer testing
-        await Future.delayed(const Duration(seconds: 2));
-        _allItems = MockMenuData.menuItems;
-        _banners = MockMenuData.banners;
-        _allRestaurants = MockMenuData.restaurants;
-      } else {
-        _allItems = await _menuService.getMenuItems();
-        _banners = await _menuService.getBanners();
-        // For now, restaurants are only in mock data until IMenuService is updated
-        _allRestaurants = MockMenuData.restaurants;
-      }
-      
-      _filteredItems = _allItems.where((item) => item.isAvailable).toList();
-      _filteredRestaurants = List.from(_allRestaurants);
+      // Parallel execution for faster start (Senior approach)
+      final results = await Future.wait([
+        _menuRepository.getMenuItems(),
+        _menuRepository.getBanners(),
+        _menuRepository.getRestaurants(),
+      ]);
+
+      _allItems = results[0] as List<MenuItemModel>;
+      _banners = results[1] as List<String>;
+      _allRestaurants = results[2] as List<RestaurantModel>;
+
+      _applyFilters();
     } catch (e) {
-      _errorMessage = 'Failed to load menu. Please try again.';
-      debugPrint('Error loading menu: $e');
+      _errorMessage = 'Unable to load menu. Please check your connection.';
+      debugPrint('MenuProvider Init Error: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  // Filter by category
+  /// Category Filter
   void filterByCategory(FoodCategory? category) {
     _selectedCategory = category;
     _applyFilters();
   }
 
-  // Search items with Debouncing (Senior approach)
+  /// Search Logic with Improved Debouncing
   void searchItems(String query) {
+    if (_searchQuery == query) return;
+    
     _searchQuery = query;
     
-    // Cancel any previous debounce timer
     if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
 
-    // Set a new debounce timer
+    if (query.isNotEmpty) {
+      _isSearchLoading = true;
+      notifyListeners();
+    }
+
     _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+      _isSearchLoading = false;
       _applyFilters();
     });
     
-    // Only notify if query is empty to clear results immediately
-    if (query.isEmpty) notifyListeners();
+    if (query.isEmpty) {
+      _isSearchLoading = false;
+      _applyFilters();
+    }
   }
 
+  /// Centralized Filter Logic (Production Standard)
   void _applyFilters() {
-    // 1. Filter by category
     Iterable<MenuItemModel> items = _allItems;
+
+    // Filter by category
     if (_selectedCategory != null) {
       items = items.where((item) => item.category == _selectedCategory);
     }
 
-    // 2. Filter by search query
+    // Filter by search
     if (_searchQuery.isNotEmpty) {
-      final lowerQuery = _searchQuery.toLowerCase();
-      items = items.where((item) =>
-          item.name.toLowerCase().contains(lowerQuery) ||
-          item.description.toLowerCase().contains(lowerQuery));
+      final q = _searchQuery.toLowerCase();
+      items = items.where((i) => i.name.toLowerCase().contains(q) || i.description.toLowerCase().contains(q));
     }
 
     _filteredItems = items.where((item) => item.isAvailable).toList();
 
-    // Update restaurant list based on filtered items
+    // Map items to restaurants
     final restaurantIds = _filteredItems.map((e) => e.restaurantId).toSet();
+    
     if (_searchQuery.isEmpty && _selectedCategory == null) {
       _filteredRestaurants = List.from(_allRestaurants);
     } else {
@@ -118,27 +125,15 @@ class MenuProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Clear filters
   void clearFilters() {
     _selectedCategory = null;
     _searchQuery = '';
-    _filteredItems = _allItems.where((item) => item.isAvailable).toList();
-    _filteredRestaurants = List.from(_allRestaurants);
-    notifyListeners();
+    _applyFilters();
   }
 
   @override
   void dispose() {
     _searchDebounce?.cancel();
     super.dispose();
-  }
-
-  // Get item by ID
-  MenuItemModel? getItemById(String id) {
-    try {
-      return _allItems.firstWhere((item) => item.id == id);
-    } catch (e) {
-      return null;
-    }
   }
 }
