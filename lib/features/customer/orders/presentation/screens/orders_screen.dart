@@ -3,9 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../core/constants/app_strings.dart';
-import '../../../../../core/theme/glass_theme.dart';
 import '../../../../../shared/widgets/loading_indicator.dart';
-import '../../../../../shared/widgets/animated_background.dart';
 import '../../../../auth/providers/auth_provider.dart';
 import '../../providers/order_provider.dart';
 import '../widgets/order_card_widget.dart';
@@ -27,11 +25,15 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
     // Fetch orders on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = context.read<AuthProvider>().currentUser;
-      if (user != null) {
-        context.read<OrderProvider>().fetchOrders(user.id);
-      }
+      _refreshOrders();
     });
+  }
+
+  void _refreshOrders() {
+    final user = context.read<AuthProvider>().currentUser;
+    if (user != null) {
+      context.read<OrderProvider>().fetchOrders(user.id);
+    }
   }
 
   @override
@@ -43,53 +45,20 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              // App Bar Header
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppStrings.myOrders,
-                      style: GlassTheme.headlineLarge,
-                    ),
-                    const SizedBox(height: 12),
-                    TabBar(
-                      controller: _tabController,
-                      indicatorColor: GlassTheme.primaryBlue,
-                      labelColor: GlassTheme.primaryBlue,
-                      unselectedLabelColor: GlassTheme.textSecondary,
-                      indicatorWeight: 3,
-                      labelStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                      tabs: const [
-                        Tab(text: 'Active'),
-                        Tab(text: 'History'),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Tab View Content
-              Expanded(
-                child: Consumer<OrderProvider>(
+      appBar: AppBar(
+        title: const Text(AppStrings.myOrders),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.primaryRed,
+          labelColor: AppColors.primaryRed,
+          unselectedLabelColor: AppColors.textSecondary,
+          tabs: const [
+            Tab(text: 'Active'),
+            Tab(text: 'History'),
+          ],
+        ),
+      ),
+      body: Consumer<OrderProvider>(
         builder: (context, orderProvider, child) {
           if (orderProvider.isLoading) {
             return const LoadingIndicator(message: 'Loading orders...');
@@ -100,25 +69,12 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: AppSizes.iconXXL,
-                    color: AppColors.error,
-                  ),
-                  SizedBox(height: AppSizes.spacingMD),
-                  Text(
-                    orderProvider.error!,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: AppSizes.spacingMD),
-                  TextButton(
-                    onPressed: () {
-                      final user = context.read<AuthProvider>().currentUser;
-                      if (user != null) {
-                        orderProvider.fetchOrders(user.id);
-                      }
-                    },
+                  const Icon(Icons.error_outline, size: 60, color: AppColors.error),
+                  const SizedBox(height: 16),
+                  Text(orderProvider.error!, textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _refreshOrders,
                     child: const Text('Retry'),
                   ),
                 ],
@@ -129,46 +85,26 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           return TabBarView(
             controller: _tabController,
             children: [
-              // Active Orders Tab
-              _buildActiveOrdersList(orderProvider),
-
-              // Order History Tab
-              _buildOrderHistoryList(orderProvider),
+              _buildOrdersList(orderProvider.activeOrders, 'No active orders'),
+              _buildOrdersList(orderProvider.orderHistory, 'No order history'),
             ],
           );
         },
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
 
-  Widget _buildActiveOrdersList(OrderProvider orderProvider) {
-    if (!orderProvider.hasActiveOrders) {
+  Widget _buildOrdersList(List orders, String emptyMessage) {
+    if (orders.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              size: AppSizes.iconXXL * 2,
-              color: GlassTheme.textTertiary,
-            ),
-            SizedBox(height: AppSizes.spacingLG),
+            Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[300]),
+            const SizedBox(height: 16),
             Text(
-              'No active orders',
-              style: GlassTheme.displayMedium.copyWith(
-                fontSize: 20,
-                color: GlassTheme.textSecondary,
-              ),
-            ),
-            SizedBox(height: AppSizes.spacingSM),
-            Text(
-              'Your active orders will appear here',
-              style: GlassTheme.bodyMedium,
+              emptyMessage,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ],
         ),
@@ -176,17 +112,12 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     }
 
     return RefreshIndicator(
-      onRefresh: () async {
-        final user = context.read<AuthProvider>().currentUser;
-        if (user != null) {
-          await orderProvider.fetchOrders(user.id);
-        }
-      },
+      onRefresh: () async => _refreshOrders(),
       child: ListView.builder(
-        padding: EdgeInsets.all(AppSizes.paddingMD),
-        itemCount: orderProvider.activeOrders.length,
+        padding: const EdgeInsets.all(AppSizes.paddingMD),
+        itemCount: orders.length,
         itemBuilder: (context, index) {
-          final order = orderProvider.activeOrders[index];
+          final order = orders[index];
           return OrderCardWidget(
             order: order,
             onTap: () {
@@ -196,61 +127,6 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               );
             },
             onCancel: () => _showCancelDialog(context, order.id),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildOrderHistoryList(OrderProvider orderProvider) {
-    if (!orderProvider.hasOrderHistory) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.history,
-              size: AppSizes.iconXXL * 2,
-              color: GlassTheme.textTertiary,
-            ),
-            SizedBox(height: AppSizes.spacingLG),
-            Text(
-              'No order history',
-              style: GlassTheme.displayMedium.copyWith(
-                fontSize: 20,
-                color: GlassTheme.textSecondary,
-              ),
-            ),
-            SizedBox(height: AppSizes.spacingSM),
-            Text(
-              'Your completed orders will appear here',
-              style: GlassTheme.bodyMedium,
-            ),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        final user = context.read<AuthProvider>().currentUser;
-        if (user != null) {
-          await orderProvider.fetchOrders(user.id);
-        }
-      },
-      child: ListView.builder(
-        padding: EdgeInsets.all(AppSizes.paddingMD),
-        itemCount: orderProvider.orderHistory.length,
-        itemBuilder: (context, index) {
-          final order = orderProvider.orderHistory[index];
-          return OrderCardWidget(
-            order: order,
-            onTap: () {
-              Navigator.of(context).pushNamed(
-                '/customer/order-tracking',
-                arguments: order,
-              );
-            },
             onReorder: () => _handleReorder(context, order),
           );
         },
@@ -265,38 +141,21 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         title: const Text('Cancel Order?'),
         content: const Text('Are you sure you want to cancel this order?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('No'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('No')),
           TextButton(
             onPressed: () async {
-              Navigator.of(context).pop();
-
+              Navigator.pop(context);
               final success = await context.read<OrderProvider>().cancelOrder(orderId);
-
-              if (!context.mounted) return;
-
-              if (success) {
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Order cancelled successfully'),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Cannot cancel order. It\'s already being prepared.'),
-                    backgroundColor: AppColors.error,
+                  SnackBar(
+                    content: Text(success ? 'Cancelled' : 'Cannot cancel now'),
+                    backgroundColor: success ? Colors.green : Colors.red,
                   ),
                 );
               }
             },
-            child: const Text(
-              'Yes, Cancel',
-              style: TextStyle(color: AppColors.error),
-            ),
+            child: const Text('Yes, Cancel', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -304,33 +163,16 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   }
 
   void _handleReorder(BuildContext context, order) async {
-    final orderProvider = context.read<OrderProvider>();
-
-    final newOrder = await orderProvider.reorder(order);
-
-    if (!context.mounted) return;
-
-    if (newOrder != null) {
+    final newOrder = await context.read<OrderProvider>().reorder(order);
+    if (context.mounted && newOrder != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Order #${newOrder.id} placed successfully'),
-          backgroundColor: AppColors.success,
+          content: Text('Reordered successfully'),
+          backgroundColor: Colors.green,
           action: SnackBarAction(
             label: 'VIEW',
-            onPressed: () {
-              Navigator.of(context).pushNamed(
-                '/customer/order-tracking',
-                arguments: newOrder,
-              );
-            },
+            onPressed: () => Navigator.pushNamed(context, '/customer/order-tracking', arguments: newOrder),
           ),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to reorder. Please try again.'),
-          backgroundColor: AppColors.error,
         ),
       );
     }

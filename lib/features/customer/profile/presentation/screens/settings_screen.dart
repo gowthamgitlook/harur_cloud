@@ -4,6 +4,9 @@ import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../core/constants/app_strings.dart';
 import '../../../../../core/theme/theme_provider.dart';
+import '../../../../../core/utils/permissions_handler.dart';
+import 'support_screen.dart';
+import 'feedback_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -14,327 +17,116 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
-  bool _orderUpdates = true;
-  bool _promotionalOffers = true;
-  bool _soundEnabled = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.settings),
-      ),
+      appBar: AppBar(title: const Text(AppStrings.settings)),
       body: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Appearance Section
-                _buildSectionHeader(context, 'Appearance'),
-                _buildSettingTile(
-                  context,
-                  icon: Icons.dark_mode,
-                  title: 'Dark Mode',
-                  subtitle: 'Enable dark theme',
-                  trailing: Switch(
-                    value: themeProvider.isDarkMode,
-                    onChanged: (value) {
-                      themeProvider.toggleTheme();
-                    },
-                    activeThumbColor: AppColors.primaryRed,
-                  ),
+          return ListView(
+            children: [
+              _buildSectionHeader('Support & Feedback'),
+              _buildSettingTile(
+                context,
+                icon: Icons.help_outline,
+                title: 'Help & Support',
+                subtitle: 'FAQs, Chat and Call support',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SupportScreen())),
+              ),
+              _buildSettingTile(
+                context,
+                icon: Icons.feedback_outlined,
+                title: 'Send Feedback',
+                subtitle: 'Tell us how we can improve',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FeedbackScreen())),
+              ),
+
+              _buildSectionHeader('App Settings'),
+              _buildSettingTile(
+                context,
+                icon: Icons.dark_mode_outlined,
+                title: 'Dark Mode',
+                subtitle: 'Toggle app theme',
+                trailing: Switch(
+                  value: themeProvider.isDarkMode,
+                  onChanged: (v) => themeProvider.toggleTheme(),
+                  activeColor: AppColors.primaryRed,
                 ),
-
-                Divider(height: 1, color: AppColors.divider),
-
-                // Notifications Section
-                _buildSectionHeader(context, 'Notifications'),
-                _buildSettingTile(
-                  context,
-                  icon: Icons.notifications,
-                  title: 'Push Notifications',
-                  subtitle: 'Enable push notifications',
-                  trailing: Switch(
-                    value: _notificationsEnabled,
-                    onChanged: (value) {
-                      setState(() => _notificationsEnabled = value);
-                      if (!value) {
-                        setState(() {
-                          _orderUpdates = false;
-                          _promotionalOffers = false;
-                        });
-                      }
-                    },
-                    activeThumbColor: AppColors.primaryRed,
-                  ),
+              ),
+              _buildSettingTile(
+                context,
+                icon: Icons.notifications_none,
+                title: 'Notifications',
+                subtitle: 'Manage app alerts',
+                trailing: Switch(
+                  value: _notificationsEnabled,
+                  onChanged: (v) => setState(() => _notificationsEnabled = v),
+                  activeColor: AppColors.primaryRed,
                 ),
+              ),
 
-                _buildSettingTile(
-                  context,
-                  icon: Icons.shopping_bag,
-                  title: 'Order Updates',
-                  subtitle: 'Get notified about order status',
-                  trailing: Switch(
-                    value: _orderUpdates,
-                    onChanged: _notificationsEnabled
-                        ? (value) => setState(() => _orderUpdates = value)
-                        : null,
-                    activeThumbColor: AppColors.primaryRed,
-                  ),
-                  enabled: _notificationsEnabled,
-                ),
+              _buildSectionHeader('Permissions'),
+              _buildSettingTile(
+                context,
+                icon: Icons.location_on_outlined,
+                title: 'Location Access',
+                subtitle: 'Manage location permissions',
+                onTap: () => PermissionsHandler.openAppSettings(),
+              ),
+              _buildSettingTile(
+                context,
+                icon: Icons.camera_alt_outlined,
+                title: 'Camera Access',
+                subtitle: 'Used for QR and profile photos',
+                onTap: () => PermissionsHandler.openAppSettings(),
+              ),
 
-                _buildSettingTile(
-                  context,
-                  icon: Icons.local_offer,
-                  title: 'Promotional Offers',
-                  subtitle: 'Receive offers and discounts',
-                  trailing: Switch(
-                    value: _promotionalOffers,
-                    onChanged: _notificationsEnabled
-                        ? (value) => setState(() => _promotionalOffers = value)
-                        : null,
-                    activeThumbColor: AppColors.primaryRed,
-                  ),
-                  enabled: _notificationsEnabled,
-                ),
-
-                _buildSettingTile(
-                  context,
-                  icon: Icons.volume_up,
-                  title: 'Notification Sound',
-                  subtitle: 'Play sound for notifications',
-                  trailing: Switch(
-                    value: _soundEnabled,
-                    onChanged: _notificationsEnabled
-                        ? (value) => setState(() => _soundEnabled = value)
-                        : null,
-                    activeThumbColor: AppColors.primaryRed,
-                  ),
-                  enabled: _notificationsEnabled,
-                ),
-
-                Divider(height: 1, color: AppColors.divider),
-
-                // App Preferences Section
-                _buildSectionHeader(context, 'App Preferences'),
-                _buildSettingTile(
-                  context,
-                  icon: Icons.language,
-                  title: 'Language',
-                  subtitle: 'English (Default)',
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                  onTap: () => _showComingSoonSnackBar(context),
-                ),
-
-                _buildSettingTile(
-                  context,
-                  icon: Icons.location_city,
-                  title: 'Default Location',
-                  subtitle: 'Harur, Tamil Nadu',
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                  onTap: () => _showComingSoonSnackBar(context),
-                ),
-
-                Divider(height: 1, color: AppColors.divider),
-
-                // Data & Privacy Section
-                _buildSectionHeader(context, 'Data & Privacy'),
-                _buildSettingTile(
-                  context,
-                  icon: Icons.storage,
-                  title: 'Clear Cache',
-                  subtitle: 'Free up storage space',
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                  onTap: () => _showClearCacheDialog(context),
-                ),
-
-                _buildSettingTile(
-                  context,
-                  icon: Icons.download,
-                  title: 'Download Data',
-                  subtitle: 'Download your order history',
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                  onTap: () => _showComingSoonSnackBar(context),
-                ),
-
-                _buildSettingTile(
-                  context,
-                  icon: Icons.delete_forever,
-                  title: 'Delete Account',
-                  subtitle: 'Permanently delete your account',
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                  onTap: () => _showDeleteAccountDialog(context),
-                  textColor: AppColors.error,
-                ),
-
-                Divider(height: 1, color: AppColors.divider),
-
-                // Legal Section
-                _buildSectionHeader(context, 'Legal'),
-                _buildSettingTile(
-                  context,
-                  icon: Icons.description,
-                  title: 'Terms & Conditions',
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                  onTap: () => _showComingSoonSnackBar(context),
-                ),
-
-                _buildSettingTile(
-                  context,
-                  icon: Icons.privacy_tip,
-                  title: 'Privacy Policy',
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                  onTap: () => _showComingSoonSnackBar(context),
-                ),
-
-                _buildSettingTile(
-                  context,
-                  icon: Icons.gavel,
-                  title: 'Licenses',
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                  onTap: () {
-                    showLicensePage(
-                      context: context,
-                      applicationName: AppStrings.appName,
-                      applicationVersion: '1.0.0',
-                    );
-                  },
-                ),
-
-                SizedBox(height: AppSizes.spacingXL),
-              ],
-            ),
+              _buildSectionHeader('More'),
+              _buildSettingTile(
+                context,
+                icon: Icons.info_outline,
+                title: 'About App',
+                subtitle: 'Version 1.0.0 (Staging)',
+                onTap: () {
+                  showAboutDialog(
+                    context: context,
+                    applicationName: AppStrings.appName,
+                    applicationVersion: '1.0.0',
+                    applicationIcon: const Icon(Icons.restaurant_menu, color: AppColors.primaryRed, size: 40),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: 40),
+            ],
           );
         },
       ),
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
+  Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        AppSizes.paddingLG,
-        AppSizes.paddingLG,
-        AppSizes.paddingLG,
-        AppSizes.paddingSM,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppColors.primaryRed,
-              fontWeight: FontWeight.w600,
-            ),
+        title.toUpperCase(),
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2),
       ),
     );
   }
 
-  Widget _buildSettingTile(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    Widget? trailing,
-    VoidCallback? onTap,
-    bool enabled = true,
-    Color? textColor,
-  }) {
+  Widget _buildSettingTile(BuildContext context, {required IconData icon, required String title, required String subtitle, Widget? trailing, VoidCallback? onTap}) {
     return ListTile(
-      enabled: enabled,
       onTap: onTap,
       leading: Container(
-        padding: EdgeInsets.all(AppSizes.paddingSM),
-        decoration: BoxDecoration(
-          color: (textColor ?? AppColors.primaryRed).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppSizes.radiusSM),
-        ),
-        child: Icon(
-          icon,
-          color: textColor ?? AppColors.primaryRed,
-          size: AppSizes.iconMD,
-        ),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: AppColors.primaryRed.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(8)),
+        child: Icon(icon, color: AppColors.primaryRed, size: 22),
       ),
-      title: Text(
-        title,
-        style: TextStyle(color: textColor),
-      ),
-      subtitle: subtitle != null
-          ? Text(
-              subtitle,
-              style: TextStyle(
-                color: enabled ? AppColors.textSecondary : AppColors.textSecondary.withValues(alpha: 0.5),
-              ),
-            )
-          : null,
-      trailing: trailing,
-    );
-  }
-
-  void _showComingSoonSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Feature coming soon!')),
-    );
-  }
-
-  void _showClearCacheDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear Cache'),
-        content: const Text('This will clear temporary data and free up storage space. Continue?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Cache cleared successfully'),
-                  backgroundColor: AppColors.success,
-                ),
-              );
-            },
-            child: const Text('Clear'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteAccountDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Account'),
-        content: const Text(
-          'Are you sure you want to permanently delete your account? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Account deletion - Contact support'),
-                  backgroundColor: AppColors.info,
-                ),
-              );
-            },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+      trailing: trailing ?? const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
     );
   }
 }

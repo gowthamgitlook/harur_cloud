@@ -2,226 +2,113 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../constants/app_colors.dart';
+import '../constants/app_sizes.dart';
 
 class PermissionsHandler {
   PermissionsHandler._();
 
-  /// Check and request location permissions
-  static Future<bool> requestLocationPermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Check if location services are enabled
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return false;
+  /// Senior Approach: Explain WHY before asking
+  static Future<bool> requestLocationPermissionWithDialog(BuildContext context) async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    
+    if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+      return true;
     }
 
-    // Check location permission status
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return false;
-      }
-    }
+    if (!context.mounted) return false;
 
-    if (permission == LocationPermission.deniedForever) {
-      return false;
-    }
+    // Trending UX: Pre-permission dialog
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.radiusLG)),
+        title: const Row(
+          children: [
+            Icon(Icons.location_on, color: AppColors.primaryRed),
+            SizedBox(width: 10),
+            Text('Use Location?'),
+          ],
+        ),
+        content: const Text(
+          'Allowing location access helps us provide accurate delivery times and find the nearest restaurants for you.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('NOT NOW', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryRed),
+            child: const Text('ALLOW'),
+          ),
+        ],
+      ),
+    );
 
-    return true;
+    if (proceed != true) return false;
+
+    permission = await Geolocator.requestPermission();
+    return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
   }
 
-  /// Get current location
   static Future<Position?> getCurrentLocation() async {
     try {
-      final hasPermission = await requestLocationPermission();
-      if (!hasPermission) {
-        return null;
-      }
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return null;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.deniedForever) return null;
 
       return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
     } catch (e) {
-      debugPrint('Error getting location: $e');
+      debugPrint('Location Error: $e');
       return null;
     }
   }
 
-  /// Check camera permission (handled by image_picker automatically)
-  static Future<bool> checkCameraPermission() async {
-    // image_picker handles camera permission automatically
-    return true;
-  }
-
-  /// Pick image from camera
-  static Future<XFile?> pickImageFromCamera() async {
-    try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 85,
-      );
-      return image;
-    } catch (e) {
-      debugPrint('Error picking image from camera: $e');
-      return null;
-    }
-  }
-
-  /// Pick image from gallery
-  static Future<XFile?> pickImageFromGallery() async {
-    try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 85,
-      );
-      return image;
-    } catch (e) {
-      debugPrint('Error picking image from gallery: $e');
-      return null;
-    }
-  }
-
-  /// Show image picker bottom sheet
+  /// Pick image helper
   static Future<XFile?> showImagePicker(BuildContext context) async {
     return await showModalBottomSheet<XFile?>(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
           children: [
-            const Text(
-              'Choose Image Source',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text('Profile Photo', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ),
-            const SizedBox(height: 20),
             ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Camera'),
+              leading: const Icon(Icons.camera_alt, color: AppColors.primaryRed),
+              title: const Text('Take a photo'),
               onTap: () async {
-                final image = await pickImageFromCamera();
-                if (context.mounted) {
-                  Navigator.of(context).pop(image);
-                }
+                final ImagePicker picker = ImagePicker();
+                final file = await picker.pickImage(source: ImageSource.camera);
+                if (context.mounted) Navigator.pop(context, file);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Gallery'),
+              leading: const Icon(Icons.photo_library, color: AppColors.primaryRed),
+              title: const Text('Choose from gallery'),
               onTap: () async {
-                final image = await pickImageFromGallery();
-                if (context.mounted) {
-                  Navigator.of(context).pop(image);
-                }
+                final ImagePicker picker = ImagePicker();
+                final file = await picker.pickImage(source: ImageSource.gallery);
+                if (context.mounted) Navigator.pop(context, file);
               },
             ),
-            const SizedBox(height: 10),
           ],
         ),
       ),
     );
   }
 
-  /// Make phone call
-  static Future<bool> makePhoneCall(String phoneNumber) async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-    try {
-      if (await canLaunchUrl(phoneUri)) {
-        await launchUrl(phoneUri);
-        return true;
-      }
-      return false;
-    } catch (e) {
-      debugPrint('Error making phone call: $e');
-      return false;
-    }
-  }
-
-  /// Open location in maps
-  static Future<bool> openMaps(double latitude, double longitude) async {
-    final Uri mapsUri = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
-    try {
-      if (await canLaunchUrl(mapsUri)) {
-        await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
-        return true;
-      }
-      return false;
-    } catch (e) {
-      debugPrint('Error opening maps: $e');
-      return false;
-    }
-  }
-
-  /// Show permission denied dialog
-  static void showPermissionDeniedDialog(
-    BuildContext context,
-    String permissionName,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('$permissionName Permission Required'),
-        content: Text(
-          'Please grant $permissionName permission in app settings to use this feature.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await Geolocator.openAppSettings();
-            },
-            child: const Text('Open Settings'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Check if location services are enabled
-  static Future<bool> isLocationServiceEnabled() async {
-    return await Geolocator.isLocationServiceEnabled();
-  }
-
-  /// Show location services disabled dialog
-  static void showLocationServicesDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Location Services Disabled'),
-        content: const Text(
-          'Please enable location services in your device settings to use this feature.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await Geolocator.openLocationSettings();
-            },
-            child: const Text('Open Settings'),
-          ),
-        ],
-      ),
-    );
+  static Future<void> openAppSettings() async {
+    await Geolocator.openAppSettings();
   }
 }

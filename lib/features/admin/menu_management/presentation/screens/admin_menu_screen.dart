@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
-import '../../../../../core/theme/glass_theme.dart';
+import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../shared/enums/food_category.dart';
 import '../../../../../shared/models/menu_item_model.dart';
-import '../../../../../shared/widgets/animated_background.dart';
-import '../../../../../shared/widgets/glass_card.dart';
 import '../../providers/admin_menu_provider.dart';
 import 'add_edit_menu_item_screen.dart';
 
@@ -37,107 +35,54 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedBackground(
-        colors: const [
-          Color(0xFFF5F7FA),
-          Color(0xFFE8F0FE),
-          Color(0xFFFFFFFF),
-        ],
-        showParticles: false,
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Glass App Bar
-              GlassCard(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    Icon(Icons.restaurant_menu, color: GlassTheme.primaryBlue, size: 28),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text('Menu Management', style: GlassTheme.headlineLarge),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.refresh, color: GlassTheme.textPrimary),
-                      onPressed: () {
-                        context.read<AdminMenuProvider>().fetchMenuItems();
-                      },
-                    ),
-                  ],
-                ),
-              ).animate().fadeIn(duration: 400.ms),
-
-              // Category Tabs
-              GlassCard(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.all(8),
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  indicatorColor: GlassTheme.primaryBlue,
-                  labelColor: GlassTheme.textPrimary,
-                  unselectedLabelColor: GlassTheme.textSecondary,
-                  tabs: [
-                    const Tab(text: 'All'),
-                    ...FoodCategory.values.map((category) => Tab(text: category.displayName)),
-                  ],
-                ),
-              ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
-
-              // Content
-              Expanded(
-                child:
-                Consumer<AdminMenuProvider>(
-                  builder: (context, provider, child) {
-                    if (provider.isLoading) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(GlassTheme.primaryBlue),
-                        ),
-                      );
-                    }
-
-                    return TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _buildMenuList(provider, null),
-                        ...FoodCategory.values.map((category) => _buildMenuList(provider, category)),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
+      appBar: AppBar(
+        title: const Text('Menu Management'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => context.read<AdminMenuProvider>().fetchMenuItems(),
           ),
-        ),
-      ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: GlassTheme.primaryBlue.withValues(alpha: 0.5),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          indicatorColor: AppColors.primaryRed,
+          labelColor: AppColors.primaryRed,
+          unselectedLabelColor: AppColors.textSecondary,
+          tabs: [
+            const Tab(text: 'All'),
+            ...FoodCategory.values.map((category) => Tab(text: category.displayName)),
           ],
         ),
-        child: FloatingActionButton.extended(
-          onPressed: () async {
-            final result = await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const AddEditMenuItemScreen(),
-              ),
-            );
-            if (result == true && context.mounted) {
-              context.read<AdminMenuProvider>().fetchMenuItems();
-            }
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('Add Item'),
-          backgroundColor: GlassTheme.primaryBlue,
-        ),
+      ),
+      body: Consumer<AdminMenuProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              _buildMenuList(provider, null),
+              ...FoodCategory.values.map((category) => _buildMenuList(provider, category)),
+            ],
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const AddEditMenuItemScreen(),
+            ),
+          );
+          if (result == true && context.mounted) {
+            context.read<AdminMenuProvider>().fetchMenuItems();
+          }
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Add Item'),
       ),
     );
   }
@@ -152,16 +97,11 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProv
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.restaurant_menu, size: 64, color: GlassTheme.textTertiary),
+            Icon(Icons.restaurant_menu, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'No menu items found',
-              style: GlassTheme.displayMedium.copyWith(color: GlassTheme.textSecondary),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tap the + button to add items',
-              style: GlassTheme.bodyMedium,
+              style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -169,14 +109,10 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProv
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSizes.paddingMD),
       itemCount: items.length,
       itemBuilder: (context, index) {
-        final item = items[index];
-        return _MenuItemCard(item: item)
-            .animate()
-            .fadeIn(duration: 400.ms, delay: (50 * index).ms)
-            .slideX(begin: 0.2, end: 0);
+        return _MenuItemCard(item: items[index]);
       },
     );
   }
@@ -187,234 +123,119 @@ class _MenuItemCard extends StatelessWidget {
 
   const _MenuItemCard({required this.item});
 
-  Future<void> _showDeleteConfirmation(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete Menu Item', style: TextStyle(color: GlassTheme.textPrimary)),
-        content: Text(
-          'Are you sure you want to delete "${item.name}"? This action cannot be undone.',
-          style: TextStyle(color: GlassTheme.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel', style: TextStyle(color: GlassTheme.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.red.withValues(alpha: 0.1),
-            ),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      final provider = context.read<AdminMenuProvider>();
-      final success = await provider.deleteMenuItem(item.id);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? '${item.name} deleted successfully'
-                  : 'Failed to delete ${item.name}',
-            ),
-            backgroundColor: success ? Colors.green : Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Item Image/Icon
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      item.category.color.withValues(alpha: 0.15),
-                      item.category.color.withValues(alpha: 0.05),
+    return Card(
+      margin: const EdgeInsets.only(bottom: AppSizes.paddingMD),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSizes.paddingMD),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // Item Image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMD),
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    color: AppColors.placeholder,
+                    child: item.imageUrl.startsWith('http')
+                        ? Image.network(item.imageUrl, fit: BoxFit.cover)
+                        : Icon(item.category.icon, size: 40, color: AppColors.textSecondary),
+                  ),
+                ),
+                const SizedBox(width: AppSizes.spacingMD),
+                // Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Text(
+                            '₹${item.price.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryRed,
+                            ),
+                          ),
+                          const Spacer(),
+                          if (item.isPopular)
+                            const Badge(
+                              label: Text('Popular'),
+                              backgroundColor: Colors.orange,
+                            ),
+                        ],
+                      ),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: item.category.color.withValues(alpha: 0.3),
-                    width: 1,
-                  ),
                 ),
-                child: Icon(
-                  item.category.icon,
-                  size: 40,
-                  color: item.category.color,
+              ],
+            ),
+            const Divider(height: 24),
+            Row(
+              children: [
+                Switch(
+                  value: item.isAvailable,
+                  onChanged: (value) {
+                    context.read<AdminMenuProvider>().toggleAvailability(item.id, value);
+                  },
                 ),
-              ),
-
-              const SizedBox(width: 12),
-
-              // Item Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item.name,
-                            style: GlassTheme.headlineLarge.copyWith(fontSize: 18),
-                          ),
-                        ),
-                        if (item.isPopular)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFFA500), Color(0xFFFF6B00)],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Text(
-                              'Popular',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.description,
-                      style: GlassTheme.labelSmall,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: item.category.color.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: item.category.color.withValues(alpha: 0.4),
-                            ),
-                          ),
-                          child: Text(
-                            item.category.displayName,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: item.category.color,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '₹${item.price.toStringAsFixed(0)}',
-                          style: GlassTheme.headlineLarge.copyWith(
-                            fontSize: 18,
-                            color: Colors.greenAccent,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const Divider(color: Colors.white24, height: 24),
-
-          // Actions Row
-          Row(
-            children: [
-              // Availability Toggle
-              Expanded(
-                child: Row(
-                  children: [
-                    Switch(
-                      value: item.isAvailable,
-                      onChanged: (value) async {
-                        final provider = context.read<AdminMenuProvider>();
-                        final success = await provider.toggleAvailability(item.id, value);
-
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                value
-                                    ? '${item.name} is now available'
-                                    : '${item.name} is now unavailable',
-                              ),
-                              backgroundColor: success ? Colors.green : Colors.red,
-                            ),
-                          );
-                        }
-                      },
-                      activeThumbColor: Colors.greenAccent,
-                    ),
-                    Text(
-                      item.isAvailable ? 'Available' : 'Unavailable',
-                      style: GlassTheme.labelSmall.copyWith(
-                        color: item.isAvailable ? Colors.green : GlassTheme.textTertiary,
+                const Text('Available'),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blue),
+                  onPressed: () async {
+                    final result = await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => AddEditMenuItemScreen(menuItem: item),
                       ),
-                    ),
-                  ],
+                    );
+                    if (result == true && context.mounted) {
+                      context.read<AdminMenuProvider>().fetchMenuItems();
+                    }
+                  },
                 ),
-              ),
-
-              // Edit Button
-              IconButton(
-                onPressed: () async {
-                  final result = await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => AddEditMenuItemScreen(menuItem: item),
-                    ),
-                  );
-                  if (result == true && context.mounted) {
-                    context.read<AdminMenuProvider>().fetchMenuItems();
-                  }
-                },
-                icon: Icon(Icons.edit, color: GlassTheme.primaryBlue),
-                style: IconButton.styleFrom(
-                  backgroundColor: GlassTheme.primaryBlue.withValues(alpha: 0.1),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: AppColors.error),
+                  onPressed: () => _showDeleteDialog(context),
                 ),
-              ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-              const SizedBox(width: 8),
-
-              // Delete Button
-              IconButton(
-                onPressed: () => _showDeleteConfirmation(context),
-                icon: const Icon(Icons.delete, color: Colors.red),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.red.withValues(alpha: 0.1),
-                ),
-              ),
-            ],
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Item?'),
+        content: Text('Are you sure you want to delete ${item.name}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              context.read<AdminMenuProvider>().deleteMenuItem(item.id);
+              Navigator.pop(context);
+            },
+            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),

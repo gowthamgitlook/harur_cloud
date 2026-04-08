@@ -11,6 +11,8 @@ import '../../features/customer/orders/presentation/screens/order_tracking_scree
 import '../../features/customer/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/customer/profile/presentation/screens/manage_addresses_screen.dart';
 import '../../features/customer/profile/presentation/screens/settings_screen.dart';
+import '../../features/customer/profile/presentation/screens/support_screen.dart';
+import '../../features/customer/profile/presentation/screens/feedback_screen.dart';
 import '../../features/admin/navigation/admin_main_screen.dart';
 import '../../features/delivery/navigation/delivery_main_screen.dart';
 import '../../shared/models/menu_item_model.dart';
@@ -66,6 +68,12 @@ class AppRouter {
 
       case AppRoutes.settings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
+
+      case AppRoutes.support:
+        return MaterialPageRoute(builder: (_) => const SupportScreen());
+
+      case AppRoutes.feedback:
+        return MaterialPageRoute(builder: (_) => const FeedbackScreen());
 
       // Admin Routes
       case AppRoutes.adminMain:

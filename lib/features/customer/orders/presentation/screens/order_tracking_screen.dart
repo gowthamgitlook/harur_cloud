@@ -6,9 +6,8 @@ import '../../../../../shared/models/order_model.dart';
 import '../../../../../shared/enums/order_status.dart';
 import '../../providers/order_provider.dart';
 import '../widgets/order_timeline_widget.dart';
-import 'package:intl/intl.dart';
-
 import '../../../../../shared/widgets/live_tracking_map.dart';
+import '../../../../../core/utils/permissions_handler.dart';
 
 class OrderTrackingScreen extends StatefulWidget {
   final OrderModel order;
@@ -33,9 +32,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   }
 
   void _startOrderTracking() {
-    // Listen to order updates
-    final orderProvider = context.read<OrderProvider>();
-    orderProvider.addListener(_onOrderUpdated);
+    context.read<OrderProvider>().addListener(_onOrderUpdated);
   }
 
   void _onOrderUpdated() {
@@ -46,424 +43,232 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         );
 
     if (updatedOrder != null && updatedOrder.status != _currentOrder.status) {
-      setState(() {
-        _currentOrder = updatedOrder;
-      });
+      if (mounted) setState(() => _currentOrder = updatedOrder);
     }
   }
 
   @override
   void dispose() {
-    context.read<OrderProvider>().removeListener(_onOrderUpdated);
+    // Provider might be already disposed
+    try {
+      context.read<OrderProvider>().removeListener(_onOrderUpdated);
+    } catch (_) {}
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('dd MMM yyyy, hh:mm a');
-    final showMap = _currentOrder.status == OrderStatus.outForDelivery;
-
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Track Order'),
+        title: Text('Track Order #${_currentOrder.id.substring(0, 8)}'),
+        elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Live Tracking Map (only when Out for Delivery)
-            if (showMap)
-              SizedBox(
-                height: 300,
-                child: LiveTrackingMap(
-                  customerLat: _currentOrder.deliveryAddress.latitude,
-                  customerLng: _currentOrder.deliveryAddress.longitude,
-                  deliveryPartnerName: _currentOrder.deliveryPartnerName ?? 'Delivery Partner',
-                ),
-              ),
+      body: Stack(
+        children: [
+          // Full Screen Map Background
+          Positioned.fill(
+            bottom: 300, // Show map mostly at the top
+            child: LiveTrackingMap(
+              customerLat: _currentOrder.deliveryAddress.latitude,
+              customerLng: _currentOrder.deliveryAddress.longitude,
+              deliveryPartnerName: _currentOrder.deliveryPartnerName ?? 'Delivery Partner',
+            ),
+          ),
 
-            // Order Status Header
-            if (!showMap)
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(AppSizes.paddingLG),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primaryRed,
-                    AppColors.primaryRed.withValues(alpha: 0.8),
+          // Modern Draggable Bottom Sheet
+          DraggableScrollableSheet(
+            initialChildSize: 0.45,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            builder: (context, scrollController) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
                   ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Order #${_currentOrder.id}',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: AppColors.textLight,
-                          fontWeight: FontWeight.w700,
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    // Handle bar
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
                         ),
-                  ),
-                  SizedBox(height: AppSizes.spacingXS),
-                  Text(
-                    dateFormat.format(_currentOrder.createdAt),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textLight.withValues(alpha: 0.9),
-                        ),
-                  ),
-                  SizedBox(height: AppSizes.spacingMD),
-                  Row(
-                    children: [
-                      _buildStatusIcon(_currentOrder.status),
-                      SizedBox(width: AppSizes.spacingMD),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _getStatusTitle(_currentOrder.status),
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    color: AppColors.textLight,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                            SizedBox(height: AppSizes.spacingXS),
-                            Text(
-                              _getStatusMessage(_currentOrder.status),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textLight.withValues(alpha: 0.9),
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Order Timeline
-            Padding(
-              padding: EdgeInsets.all(AppSizes.paddingLG),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Order Timeline',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  SizedBox(height: AppSizes.spacingMD),
-                  OrderTimelineWidget(order: _currentOrder),
-                ],
-              ),
-            ),
-
-            SizedBox(height: AppSizes.spacingLG),
-
-            // Delivery Address
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingLG),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Delivery Address',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  SizedBox(height: AppSizes.spacingSM),
-                  Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(AppSizes.paddingMD),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            Icons.location_on,
-                            color: AppColors.primaryRed,
-                            size: AppSizes.iconMD,
-                          ),
-                          SizedBox(width: AppSizes.spacingMD),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _currentOrder.deliveryAddress.label,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                ),
-                                SizedBox(height: AppSizes.spacingXS),
-                                Text(
-                                  _currentOrder.deliveryAddress.fullAddress,
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
-                                ),
-                                if (_currentOrder.deliveryAddress.landmark != null) ...[
-                                  SizedBox(height: AppSizes.spacingXS),
-                                  Text(
-                                    'Landmark: ${_currentOrder.deliveryAddress.landmark}',
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: AppColors.textSecondary,
-                                        ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
+                    const SizedBox(height: 20),
 
-            SizedBox(height: AppSizes.spacingLG),
-
-            // Order Items
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingLG),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Order Items (${_currentOrder.items.length})',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  SizedBox(height: AppSizes.spacingSM),
-                  Card(
-                    child: Column(
-                      children: _currentOrder.items.map((item) {
-                        return Padding(
-                          padding: EdgeInsets.all(AppSizes.paddingMD),
-                          child: Row(
+                    // Status Header
+                    Row(
+                      children: [
+                        _buildStatusIcon(_currentOrder.status),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryRed.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(AppSizes.radiusSM),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '${item.quantity}x',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.primaryRed,
-                                        ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: AppSizes.spacingMD),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.menuItem.name,
-                                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                    if (item.selectedAddons.isNotEmpty) ...[
-                                      SizedBox(height: AppSizes.spacingXS),
-                                      Text(
-                                        'Addons: ${item.selectedAddons.map((a) => a.name).join(', ')}',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: AppColors.textSecondary,
-                                            ),
-                                      ),
-                                    ],
-                                    if (item.specialInstructions != null) ...[
-                                      SizedBox(height: AppSizes.spacingXS),
-                                      Text(
-                                        'Note: ${item.specialInstructions}',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: AppColors.textSecondary,
-                                              fontStyle: FontStyle.italic,
-                                            ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
+                              Text(
+                                _getStatusTitle(_currentOrder.status),
+                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                '₹${item.totalPrice.toStringAsFixed(0)}',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                _getStatusMessage(_currentOrder.status),
+                                style: TextStyle(color: Colors.grey[600], fontSize: 14),
                               ),
                             ],
                           ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: AppSizes.spacingLG),
-
-            // Price Breakdown
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingLG),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Bill Details',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
                         ),
-                  ),
-                  SizedBox(height: AppSizes.spacingSM),
-                  Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(AppSizes.paddingMD),
-                      child: Column(
-                        children: [
-                          _buildPriceRow(context, 'Subtotal', _currentOrder.subtotal),
-                          SizedBox(height: AppSizes.spacingSM),
-                          _buildPriceRow(context, 'Delivery Fee', _currentOrder.deliveryFee),
-                          SizedBox(height: AppSizes.spacingSM),
-                          _buildPriceRow(context, 'Tax', _currentOrder.tax),
-                          if (_currentOrder.discount > 0) ...[
-                            SizedBox(height: AppSizes.spacingSM),
-                            _buildPriceRow(
-                              context,
-                              'Discount${_currentOrder.promoCode != null ? ' (${_currentOrder.promoCode})' : ''}',
-                              -_currentOrder.discount,
-                              isDiscount: true,
-                            ),
-                          ],
-                          Divider(height: AppSizes.spacingLG, color: AppColors.divider),
-                          _buildPriceRow(
-                            context,
-                            'Total',
-                            _currentOrder.totalPrice,
-                            isTotal: true,
+                      ],
+                    ),
+
+                    if (_currentOrder.status == OrderStatus.outForDelivery) ...[
+                      const SizedBox(height: 20),
+                      _buildDeliveryPartnerCard(),
+                    ],
+
+                    const SizedBox(height: 24),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Timeline
+                    const Text('Order Status', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 16),
+                    OrderTimelineWidget(order: _currentOrder),
+
+                    const SizedBox(height: 24),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Address
+                    const Text('Delivery Location', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, color: AppColors.primaryRed, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${_currentOrder.deliveryAddress.label}: ${_currentOrder.deliveryAddress.fullAddress}',
+                            style: TextStyle(color: Colors.grey[700]),
                           ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Items Summary
+                    Text('Items (${_currentOrder.items.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    ..._currentOrder.items.map((item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          Text('${item.quantity} x ', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryRed)),
+                          Expanded(child: Text(item.menuItem.name)),
+                          Text('₹${item.totalPrice.toStringAsFixed(0)}'),
                         ],
                       ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                    )),
+                    
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
-            SizedBox(height: AppSizes.spacingXL * 2),
-          ],
-        ),
+  Widget _buildDeliveryPartnerCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primaryRed.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primaryRed.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            backgroundColor: AppColors.primaryRed,
+            child: Icon(Icons.person, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _currentOrder.deliveryPartnerName ?? 'Rahul (Partner)',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const Text('Arriving in 5 mins', style: TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () => PermissionsHandler.makePhoneCall('9876543210'),
+            icon: const Icon(Icons.call, color: Colors.green),
+            style: IconButton.styleFrom(backgroundColor: Colors.white),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildStatusIcon(OrderStatus status) {
     IconData icon;
+    Color color;
     switch (status) {
-      case OrderStatus.placed:
-        icon = Icons.receipt;
-        break;
-      case OrderStatus.preparing:
-        icon = Icons.restaurant;
-        break;
-      case OrderStatus.outForDelivery:
-        icon = Icons.delivery_dining;
-        break;
-      case OrderStatus.delivered:
-        icon = Icons.check_circle;
-        break;
-      case OrderStatus.cancelled:
-        icon = Icons.cancel;
-        break;
+      case OrderStatus.placed: icon = Icons.receipt; color = Colors.blue; break;
+      case OrderStatus.preparing: icon = Icons.restaurant; color = Colors.orange; break;
+      case OrderStatus.outForDelivery: icon = Icons.delivery_dining; color = AppColors.primaryRed; break;
+      case OrderStatus.delivered: icon = Icons.check_circle; color = Colors.green; break;
+      case OrderStatus.cancelled: icon = Icons.cancel; color = Colors.red; break;
     }
 
     return Container(
-      padding: EdgeInsets.all(AppSizes.paddingMD),
-      decoration: BoxDecoration(
-        color: AppColors.textLight.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(AppSizes.radiusMD),
-      ),
-      child: Icon(
-        icon,
-        size: AppSizes.iconLG,
-        color: AppColors.textLight,
-      ),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+      child: Icon(icon, color: color, size: 28),
     );
   }
 
   String _getStatusTitle(OrderStatus status) {
     switch (status) {
-      case OrderStatus.placed:
-        return 'Order Placed';
-      case OrderStatus.preparing:
-        return 'Preparing Your Food';
-      case OrderStatus.outForDelivery:
-        return 'Out for Delivery';
-      case OrderStatus.delivered:
-        return 'Delivered';
-      case OrderStatus.cancelled:
-        return 'Order Cancelled';
+      case OrderStatus.placed: return 'Confirmed';
+      case OrderStatus.preparing: return 'Kitchen is busy';
+      case OrderStatus.outForDelivery: return 'On the way';
+      case OrderStatus.delivered: return 'Delivered';
+      case OrderStatus.cancelled: return 'Cancelled';
     }
   }
 
   String _getStatusMessage(OrderStatus status) {
     switch (status) {
-      case OrderStatus.placed:
-        return 'Your order has been received';
-      case OrderStatus.preparing:
-        return 'We are preparing your delicious food';
-      case OrderStatus.outForDelivery:
-        return 'Your order is on the way';
-      case OrderStatus.delivered:
-        return 'Enjoy your meal!';
-      case OrderStatus.cancelled:
-        return 'This order has been cancelled';
+      case OrderStatus.placed: return 'Restaurant has accepted your order';
+      case OrderStatus.preparing: return 'Chef is preparing your delicious meal';
+      case OrderStatus.outForDelivery: return 'Rahul is bringing your order';
+      case OrderStatus.delivered: return 'Enjoy your hot food!';
+      case OrderStatus.cancelled: return 'Order was not completed';
     }
-  }
-
-  Widget _buildPriceRow(
-    BuildContext context,
-    String label,
-    double amount, {
-    bool isDiscount = false,
-    bool isTotal = false,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: isTotal ? FontWeight.w700 : FontWeight.normal,
-                color: isTotal ? AppColors.textPrimary : AppColors.textSecondary,
-              ),
-        ),
-        Text(
-          '${isDiscount ? '-' : ''}₹${amount.abs().toStringAsFixed(0)}',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
-                color: isDiscount
-                    ? AppColors.success
-                    : (isTotal ? AppColors.primaryRed : AppColors.textPrimary),
-              ),
-        ),
-      ],
-    );
   }
 }
