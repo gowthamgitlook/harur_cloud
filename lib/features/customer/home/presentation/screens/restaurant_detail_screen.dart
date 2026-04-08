@@ -5,7 +5,7 @@ import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../shared/models/restaurant_model.dart';
 import '../../../../../shared/models/menu_item_model.dart';
 import '../../../../../shared/widgets/food_item_card.dart';
-import '../providers/menu_provider.dart';
+import '../../providers/menu_provider.dart';
 import 'food_detail_screen.dart';
 
 class RestaurantDetailScreen extends StatelessWidget {

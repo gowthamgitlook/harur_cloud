@@ -159,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isLoading ? null : _sendOTP,
                   isLoading: _isLoading,
                 ),
-                SliverToBoxAdapter(child: SizedBox(height: AppSizes.spacingLG)),
+                const SizedBox(height: AppSizes.spacingLG),
                 // Test Accounts Quick Select
                 Container(
                   padding: EdgeInsets.all(AppSizes.paddingMD),

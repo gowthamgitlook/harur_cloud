@@ -87,6 +87,8 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
 
       final menuItem = MenuItemModel(
         id: widget.menuItem?.id ?? '',
+        restaurantId: widget.menuItem?.restaurantId ?? 'res_1',
+        restaurantName: widget.menuItem?.restaurantName ?? 'Harur Cloud Kitchen',
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         price: double.parse(_priceController.text.trim()),
@@ -94,6 +96,7 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
         category: _selectedCategory,
         isPopular: _isPopular,
         isAvailable: _isAvailable,
+        isVeg: widget.menuItem?.isVeg ?? true, // Default to true or add UI toggle
         rating: widget.menuItem?.rating ?? 0.0,
         reviewCount: widget.menuItem?.reviewCount ?? 0,
         addons: widget.menuItem?.addons ?? [],

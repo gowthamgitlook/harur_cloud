@@ -5,7 +5,7 @@ import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../shared/enums/food_category.dart';
 import '../../../../../shared/widgets/restaurant_card.dart';
-import '../providers/menu_provider.dart';
+import '../../providers/menu_provider.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/category_chip.dart';
 import 'restaurant_detail_screen.dart';

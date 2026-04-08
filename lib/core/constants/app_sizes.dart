@@ -80,6 +80,7 @@ class AppSizes {
   static const double spacingMD = 16.0;
   static const double spacingLG = 24.0;
   static const double spacingXL = 32.0;
+  static const double spacingXXL = 48.0;
 
   // Divider
   static const double dividerThickness = 1.0;

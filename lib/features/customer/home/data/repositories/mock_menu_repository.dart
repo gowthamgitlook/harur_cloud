@@ -1,6 +1,6 @@
-import '../../../../data/mock/mock_menu_data.dart';
-import '../../../../shared/models/menu_item_model.dart';
-import '../../../../shared/models/restaurant_model.dart';
+import '../../../../../data/mock/mock_menu_data.dart';
+import '../../../../../shared/models/menu_item_model.dart';
+import '../../../../../shared/models/restaurant_model.dart';
 import 'menu_repository.dart';
 
 class MockMenuRepository implements IMenuRepository {

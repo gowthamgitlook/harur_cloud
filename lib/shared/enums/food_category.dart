@@ -5,6 +5,7 @@ enum FoodCategory {
   friedRice,
   parotta,
   grill,
+  starters,
   drinks;
 
   String get displayName {
@@ -17,6 +18,8 @@ enum FoodCategory {
         return 'Parotta';
       case FoodCategory.grill:
         return 'Grill';
+      case FoodCategory.starters:
+        return 'Starters';
       case FoodCategory.drinks:
         return 'Drinks';
     }
@@ -32,6 +35,8 @@ enum FoodCategory {
         return Icons.flatware;
       case FoodCategory.grill:
         return Icons.outdoor_grill;
+      case FoodCategory.starters:
+        return Icons.fastfood;
       case FoodCategory.drinks:
         return Icons.local_drink;
     }
@@ -47,6 +52,8 @@ enum FoodCategory {
         return const Color(0xFFFFC107); // Amber
       case FoodCategory.grill:
         return const Color(0xFFF44336); // Red
+      case FoodCategory.starters:
+        return const Color(0xFFE91E63); // Pink
       case FoodCategory.drinks:
         return const Color(0xFF2196F3); // Blue
     }
@@ -62,6 +69,8 @@ enum FoodCategory {
         return 'assets/icons/parotta.svg';
       case FoodCategory.grill:
         return 'assets/icons/grill.svg';
+      case FoodCategory.starters:
+        return 'assets/icons/starters.svg';
       case FoodCategory.drinks:
         return 'assets/icons/drinks.svg';
     }
@@ -78,6 +87,8 @@ enum FoodCategory {
         return FoodCategory.parotta;
       case 'grill':
         return FoodCategory.grill;
+      case 'starters':
+        return FoodCategory.starters;
       case 'drinks':
         return FoodCategory.drinks;
       default:

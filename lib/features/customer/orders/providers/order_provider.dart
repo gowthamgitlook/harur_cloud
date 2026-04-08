@@ -29,10 +29,8 @@ class OrderProvider with ChangeNotifier {
     _safeInitialize();
   }
 
-  /// Senior Approach: Defensive initialization
   void _safeInitialize() {
     try {
-      // Subscribe to order updates safely
       _orderSubscription = _orderService.ordersStream.listen(
         (updatedOrders) {
           _orders = updatedOrders;
@@ -46,11 +44,9 @@ class OrderProvider with ChangeNotifier {
       );
     } catch (e) {
       debugPrint('OrderProvider setup failed: $e');
-      _error = 'Critical error initializing orders.';
     }
   }
 
-  /// Fetch all orders for a user
   Future<void> fetchOrders(String userId) async {
     _isLoading = true;
     _error = null;
@@ -61,14 +57,100 @@ class OrderProvider with ChangeNotifier {
       _categorizeOrders();
     } catch (e) {
       _error = 'Failed to load orders: $e';
-      _orders = []; // Production Safety: Clear list instead of leaving stale data
+      _orders = [];
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  // ... (Other methods logic refined with same safety patterns)
+  Future<OrderModel?> createOrder({
+    required String userId,
+    required List<CartItemModel> items,
+    required double subtotal,
+    required double deliveryFee,
+    required double tax,
+    required double discount,
+    required double totalPrice,
+    required PaymentMethod paymentMethod,
+    required AddressModel deliveryAddress,
+    String? promoCode,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final order = await _orderService.createOrder(
+        userId: userId,
+        items: items,
+        subtotal: subtotal,
+        deliveryFee: deliveryFee,
+        tax: tax,
+        discount: discount,
+        totalPrice: totalPrice,
+        paymentMethod: paymentMethod,
+        deliveryAddress: deliveryAddress,
+        promoCode: promoCode,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return order;
+    } catch (e) {
+      _error = 'Failed to create order: $e';
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<OrderModel?> getOrderById(String orderId) async {
+    try {
+      return await _orderService.getOrderById(orderId);
+    } catch (e) {
+      _error = 'Failed to load order: $e';
+      return null;
+    }
+  }
+
+  Future<bool> cancelOrder(String orderId) async {
+    try {
+      return await _orderService.cancelOrder(orderId);
+    } catch (e) {
+      _error = 'Failed to cancel order: $e';
+      return false;
+    }
+  }
+
+  Future<OrderModel?> reorder(OrderModel previousOrder) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final order = await _orderService.reorder(previousOrder);
+      _isLoading = false;
+      notifyListeners();
+      return order;
+    } catch (e) {
+      _error = 'Failed to reorder: $e';
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<Map<String, double>> getDeliveryPartnerLocation(String orderId) async {
+    try {
+      return await _orderService.getDeliveryPartnerLocation(orderId);
+    } catch (e) {
+      return {'latitude': 12.0540, 'longitude': 78.4822};
+    }
+  }
+
+  Map<OrderStatus, int> getOrderStats(String userId) {
+    return _orderService.getOrderStats(userId);
+  }
 
   void _categorizeOrders() {
     _activeOrders = _orders.where((order) =>
@@ -80,6 +162,27 @@ class OrderProvider with ChangeNotifier {
       order.status == OrderStatus.delivered ||
       order.status == OrderStatus.cancelled
     ).toList();
+  }
+
+  double getTotalSpent() {
+    return _orders
+        .where((order) => order.status == OrderStatus.delivered)
+        .fold(0.0, (sum, order) => sum + order.totalPrice);
+  }
+
+  List<String> getMostOrderedItems({int limit = 5}) {
+    final itemCounts = <String, int>{};
+    for (var order in _orders) {
+      if (order.status == OrderStatus.delivered) {
+        for (var item in order.items) {
+          final itemName = item.menuItem.name;
+          itemCounts[itemName] = (itemCounts[itemName] ?? 0) + item.quantity;
+        }
+      }
+    }
+    final sortedItems = itemCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return sortedItems.take(limit).map((e) => e.key).toList();
   }
 
   @override
