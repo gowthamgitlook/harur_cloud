@@ -9,6 +9,7 @@ class AdminMenuProvider with ChangeNotifier {
 
   List<MenuItemModel> _menuItems = [];
   FoodCategory? _categoryFilter;
+  String _searchQuery = '';
   bool _isLoading = false;
   String? _error;
   StreamSubscription? _menuSubscription;
@@ -18,97 +19,81 @@ class AdminMenuProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   FoodCategory? get categoryFilter => _categoryFilter;
+  String get searchQuery => _searchQuery;
 
-  /// Get filtered menu items based on category
+  /// Combined Search and Category Filter
   List<MenuItemModel> get filteredMenuItems {
-    if (_categoryFilter == null) {
-      return _menuItems;
-    }
-    return _menuItems.where((item) => item.category == _categoryFilter).toList();
+    return _menuItems.where((item) {
+      final matchesCategory = _categoryFilter == null || item.category == _categoryFilter;
+      final matchesSearch = _searchQuery.isEmpty || 
+          item.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().contains(_searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    }).toList();
   }
 
-  /// Get available items count
-  int get availableItemsCount {
-    return _menuItems.where((item) => item.isAvailable).length;
-  }
-
-  /// Get unavailable items count
-  int get unavailableItemsCount {
-    return _menuItems.where((item) => !item.isAvailable).length;
-  }
+  int get availableItemsCount => _menuItems.where((item) => item.isAvailable).length;
+  int get outOfStockCount => _menuItems.where((item) => !item.isAvailable).length;
 
   AdminMenuProvider() {
-    // Subscribe to menu updates
     _menuSubscription = _menuService.menuStream.listen((items) {
       _menuItems = items;
       notifyListeners();
     });
   }
 
-  /// Fetch all menu items
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
   Future<void> fetchMenuItems() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
       _menuItems = await _menuService.getAllMenuItems();
-      _isLoading = false;
-      notifyListeners();
     } catch (e) {
       _error = e.toString();
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  /// Add a new menu item
   Future<bool> addMenuItem(MenuItemModel item) async {
     _isLoading = true;
-    _error = null;
     notifyListeners();
-
     try {
       await _menuService.addMenuItem(item);
-      _isLoading = false;
-      notifyListeners();
       return true;
     } catch (e) {
       _error = e.toString();
+      return false;
+    } finally {
       _isLoading = false;
       notifyListeners();
-      return false;
     }
   }
 
-  /// Update an existing menu item
   Future<bool> updateMenuItem(MenuItemModel item) async {
     _isLoading = true;
-    _error = null;
     notifyListeners();
-
     try {
       await _menuService.updateMenuItem(item);
-      _isLoading = false;
-      notifyListeners();
       return true;
     } catch (e) {
       _error = e.toString();
+      return false;
+    } finally {
       _isLoading = false;
       notifyListeners();
-      return false;
     }
   }
 
-  /// Delete a menu item
   Future<bool> deleteMenuItem(String itemId) async {
     try {
-      final success = await _menuService.deleteMenuItem(itemId);
-      if (!success) {
-        _error = 'Failed to delete menu item';
-        notifyListeners();
-      }
-      return success;
+      return await _menuService.deleteMenuItem(itemId);
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -116,15 +101,9 @@ class AdminMenuProvider with ChangeNotifier {
     }
   }
 
-  /// Toggle menu item availability
   Future<bool> toggleAvailability(String itemId, bool isAvailable) async {
     try {
-      final success = await _menuService.toggleAvailability(itemId, isAvailable);
-      if (!success) {
-        _error = 'Failed to update availability';
-        notifyListeners();
-      }
-      return success;
+      return await _menuService.toggleAvailability(itemId, isAvailable);
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -132,37 +111,13 @@ class AdminMenuProvider with ChangeNotifier {
     }
   }
 
-  /// Filter by category
   void filterByCategory(FoodCategory? category) {
     _categoryFilter = category;
     notifyListeners();
   }
 
-  /// Clear category filter
-  void clearFilter() {
-    _categoryFilter = null;
-    notifyListeners();
-  }
-
-  /// Get menu item by ID
-  Future<MenuItemModel?> getMenuItemById(String itemId) async {
-    return await _menuService.getMenuItemById(itemId);
-  }
-
-  /// Get items by category
   List<MenuItemModel> getItemsByCategory(FoodCategory category) {
     return _menuItems.where((item) => item.category == category).toList();
-  }
-
-  /// Get item count by category
-  int getItemCountByCategory(FoodCategory category) {
-    return _menuItems.where((item) => item.category == category).length;
-  }
-
-  /// Clear error message
-  void clearError() {
-    _error = null;
-    notifyListeners();
   }
 
   @override

@@ -14,13 +14,12 @@ class AdminMenuScreen extends StatefulWidget {
   State<AdminMenuScreen> createState() => _AdminMenuScreenState();
 }
 
-class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _AdminMenuScreenState extends State<AdminMenuScreen> {
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: FoodCategory.values.length + 1, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AdminMenuProvider>().fetchMenuItems();
     });
@@ -28,92 +27,181 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> with SingleTickerProv
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('Menu Management'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             onPressed: () => context.read<AdminMenuProvider>().fetchMenuItems(),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          indicatorColor: AppColors.primaryRed,
-          labelColor: AppColors.primaryRed,
-          unselectedLabelColor: AppColors.textSecondary,
-          tabs: [
-            const Tab(text: 'All'),
-            ...FoodCategory.values.map((category) => Tab(text: category.displayName)),
-          ],
-        ),
       ),
-      body: Consumer<AdminMenuProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          // 1. Stats Bar (Senior approach: Overview first)
+          _buildStatsBar(),
 
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              _buildMenuList(provider, null),
-              ...FoodCategory.values.map((category) => _buildMenuList(provider, category)),
-            ],
-          );
-        },
+          // 2. Search & Filter Section
+          _buildSearchAndFilters(),
+
+          // 3. Menu List
+          Expanded(
+            child: Consumer<AdminMenuProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading && provider.menuItems.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final items = provider.filteredMenuItems;
+
+                if (items.isEmpty) {
+                  return _buildEmptyState(provider.searchQuery.isNotEmpty);
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () => provider.fetchMenuItems(),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      return _MenuItemCard(item: items[index]);
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const AddEditMenuItemScreen(),
-            ),
-          );
-          if (result == true && context.mounted) {
-            context.read<AdminMenuProvider>().fetchMenuItems();
-          }
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Add Item'),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddEditMenuItemScreen()),
+        ),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('New Item'),
+        backgroundColor: AppColors.primaryRed,
       ),
     );
   }
 
-  Widget _buildMenuList(AdminMenuProvider provider, FoodCategory? category) {
-    final items = category == null
-        ? provider.menuItems
-        : provider.getItemsByCategory(category);
-
-    if (items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildStatsBar() {
+    return Consumer<AdminMenuProvider>(
+      builder: (context, provider, _) => Container(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        color: Colors.white,
+        child: Row(
           children: [
-            Icon(Icons.restaurant_menu, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              'No menu items found',
-              style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.bold),
-            ),
+            _buildStatItem('Total', provider.menuItems.length.toString(), Colors.blue),
+            const SizedBox(width: 12),
+            _buildStatItem('Live', provider.availableItemsCount.toString(), Colors.green),
+            const SizedBox(width: 12),
+            _buildStatItem('Out', provider.outOfStockCount.toString(), Colors.red),
           ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(AppSizes.paddingMD),
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        return _MenuItemCard(item: items[index]);
-      },
+  Widget _buildStatItem(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.1)),
+        ),
+        child: Column(
+          children: [
+            Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+            Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchAndFilters() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      color: Colors.white,
+      child: Column(
+        children: [
+          TextField(
+            controller: _searchController,
+            onChanged: (v) => context.read<AdminMenuProvider>().setSearchQuery(v),
+            decoration: InputDecoration(
+              hintText: 'Search items...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              filled: true,
+              fillColor: Colors.grey[100],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 36,
+            child: Consumer<AdminMenuProvider>(
+              builder: (context, provider, _) => ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _buildCategoryChip(null, 'All', provider.categoryFilter == null),
+                  ...FoodCategory.values.map((c) => _buildCategoryChip(c, c.displayName, provider.categoryFilter == c)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryChip(FoodCategory? category, String label, bool isSelected) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (v) => context.read<AdminMenuProvider>().filterByCategory(v ? category : null),
+        selectedColor: AppColors.primaryRed.withValues(alpha: 0.1),
+        labelStyle: TextStyle(
+          color: isSelected ? AppColors.primaryRed : Colors.grey[700],
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          fontSize: 13,
+        ),
+        showCheckmark: false,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        side: BorderSide(color: isSelected ? AppColors.primaryRed : Colors.grey[300]!),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(bool isSearching) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(isSearching ? Icons.search_off_rounded : Icons.restaurant_menu_rounded, size: 64, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          Text(
+            isSearching ? 'No results found' : 'Menu is empty',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -125,94 +213,125 @@ class _MenuItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSizes.paddingMD),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSizes.paddingMD),
+        padding: const EdgeInsets.all(12),
         child: Column(
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Item Image
+                // Compact Image
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(AppSizes.radiusMD),
+                  borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    width: 80,
-                    height: 80,
-                    color: AppColors.placeholder,
+                    width: 70,
+                    height: 70,
+                    color: Colors.grey[100],
                     child: item.imageUrl.startsWith('http')
                         ? Image.network(item.imageUrl, fit: BoxFit.cover)
-                        : Icon(item.category.icon, size: 40, color: AppColors.textSecondary),
+                        : Icon(item.category.icon, color: Colors.grey[400]),
                   ),
                 ),
-                const SizedBox(width: AppSizes.spacingMD),
-                // Details
+                const SizedBox(width: 12),
+                // Core Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        item.name,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          _buildVegIcon(item.isVeg),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              item.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
                         item.description,
-                        maxLines: 2,
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                       ),
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            '₹${item.price.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primaryRed,
-                            ),
-                          ),
-                          const Spacer(),
-                          if (item.isPopular)
-                            const Badge(
-                              label: Text('Popular'),
-                              backgroundColor: Colors.orange,
-                            ),
-                        ],
+                      Text(
+                        '₹${item.price.toStringAsFixed(0)}',
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Colors.black),
                       ),
                     ],
                   ),
                 ),
+                // Quick Status Toggle
+                Column(
+                  children: [
+                    Transform.scale(
+                      scale: 0.8,
+                      child: Switch(
+                        value: item.isAvailable,
+                        onChanged: (v) => context.read<AdminMenuProvider>().toggleAvailability(item.id, v),
+                        activeColor: Colors.green,
+                      ),
+                    ),
+                    Text(
+                      item.isAvailable ? 'LIVE' : 'OUT',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: item.isAvailable ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-            const Divider(height: 24),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Divider(height: 1),
+            ),
             Row(
               children: [
-                Switch(
-                  value: item.isAvailable,
-                  onChanged: (value) {
-                    context.read<AdminMenuProvider>().toggleAvailability(item.id, value);
-                  },
+                Text(
+                  item.category.displayName,
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey[500]),
                 ),
-                const Text('Available'),
+                if (item.isPopular) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
+                    child: const Text('POPULAR', style: TextStyle(color: Colors.orange, fontSize: 9, fontWeight: FontWeight.bold)),
+                  ),
+                ],
                 const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () async {
-                    final result = await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => AddEditMenuItemScreen(menuItem: item),
-                      ),
-                    );
-                    if (result == true && context.mounted) {
-                      context.read<AdminMenuProvider>().fetchMenuItems();
-                    }
-                  },
+                TextButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => AddEditMenuItemScreen(menuItem: item)),
+                  ),
+                  icon: const Icon(Icons.edit_note_rounded, size: 18),
+                  label: const Text('Edit'),
+                  style: TextButton.styleFrom(visualDensity: VisualSize.compact),
                 ),
+                const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.delete, color: AppColors.error),
                   onPressed: () => _showDeleteDialog(context),
+                  icon: const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.redAccent),
+                  style: IconButton.styleFrom(visualDensity: VisualSize.compact),
                 ),
               ],
             ),
@@ -222,20 +341,29 @@ class _MenuItemCard extends StatelessWidget {
     );
   }
 
+  Widget _buildVegIcon(bool isVeg) {
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(border: Border.all(color: isVeg ? Colors.green : Colors.red, width: 1), borderRadius: BorderRadius.circular(2)),
+      child: Icon(Icons.circle, size: 8, color: isVeg ? Colors.green : Colors.red),
+    );
+  }
+
   void _showDeleteDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Item?'),
-        content: Text('Are you sure you want to delete ${item.name}?'),
+        content: const Text('This item will be permanently removed from the menu.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Keep it')),
           TextButton(
             onPressed: () {
               context.read<AdminMenuProvider>().deleteMenuItem(item.id);
               Navigator.pop(context);
             },
-            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+            child: const Text('Delete', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
