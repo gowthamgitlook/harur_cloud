@@ -70,6 +70,21 @@ class PermissionsHandler {
     }
   }
 
+  /// Make phone call
+  static Future<bool> makePhoneCall(String phoneNumber) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+    try {
+      if (await canLaunchUrl(phoneUri)) {
+        await launchUrl(phoneUri);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error making phone call: $e');
+      return false;
+    }
+  }
+
   /// Pick image helper
   static Future<XFile?> showImagePicker(BuildContext context) async {
     return await showModalBottomSheet<XFile?>(
