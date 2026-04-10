@@ -54,6 +54,56 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Login with email
+  Future<bool> loginWithEmail(String email, String password) async {
+    _authState = AuthState.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _currentUser = await _authService.loginWithEmail(email, password);
+      _authState = AuthState.authenticated;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _authState = AuthState.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Register with email
+  Future<bool> registerWithEmail({
+    required String email,
+    required String password,
+    required String name,
+    required String phone,
+    required UserRole role,
+  }) async {
+    _authState = AuthState.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _currentUser = await _authService.registerWithEmail(
+        email: email,
+        password: password,
+        name: name,
+        phone: phone,
+        role: role,
+      );
+      _authState = AuthState.authenticated;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _authState = AuthState.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   // Send OTP
   Future<bool> sendOTP(String phoneNumber) async {
     _authState = AuthState.loading;

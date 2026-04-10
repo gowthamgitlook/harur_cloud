@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
+import '../theme/glass_theme.dart';
 
 class PermissionsHandler {
   PermissionsHandler._();
@@ -89,36 +90,90 @@ class PermissionsHandler {
   static Future<XFile?> showImagePicker(BuildContext context) async {
     return await showModalBottomSheet<XFile?>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text('Profile Photo', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: AppColors.primaryRed),
-              title: const Text('Take a photo'),
-              onTap: () async {
-                final ImagePicker picker = ImagePicker();
-                final file = await picker.pickImage(source: ImageSource.camera);
-                if (context.mounted) Navigator.pop(context, file);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library, color: AppColors.primaryRed),
-              title: const Text('Choose from gallery'),
-              onTap: () async {
-                final ImagePicker picker = ImagePicker();
-                final file = await picker.pickImage(source: ImageSource.gallery);
-                if (context.mounted) Navigator.pop(context, file);
-              },
-            ),
-          ],
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      builder: (context) => GlassMorphism(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        padding: const EdgeInsets.all(24),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Text(
+                'Select Source',
+                style: GlassTheme.headlineLarge,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildPickerOption(
+                    context,
+                    icon: Icons.camera_alt_rounded,
+                    label: 'Camera',
+                    onTap: () async {
+                      final ImagePicker picker = ImagePicker();
+                      final file = await picker.pickImage(source: ImageSource.camera);
+                      if (context.mounted) Navigator.pop(context, file);
+                    },
+                  ),
+                  _buildPickerOption(
+                    context,
+                    icon: Icons.photo_library_rounded,
+                    label: 'Gallery',
+                    onTap: () async {
+                      final ImagePicker picker = ImagePicker();
+                      final file = await picker.pickImage(source: ImageSource.gallery);
+                      if (context.mounted) Navigator.pop(context, file);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  static Widget _buildPickerOption(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: GlassTheme.primaryBlue.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: GlassTheme.primaryBlue, size: 32),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: GlassTheme.bodyMedium.copyWith(
+              fontWeight: FontWeight.w600,
+              color: GlassTheme.textPrimary,
+            ),
+          ),
+        ],
       ),
     );
   }

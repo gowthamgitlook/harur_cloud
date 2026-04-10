@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
+import '../../../../../core/theme/glass_theme.dart';
+import '../../../../../shared/widgets/glass_card.dart';
 import '../../../../../shared/models/order_model.dart';
 import '../../../../../shared/enums/order_status.dart';
 import 'package:intl/intl.dart';
@@ -25,11 +27,15 @@ class OrderCardWidget extends StatelessWidget {
     final isActive = order.status != OrderStatus.delivered &&
         order.status != OrderStatus.cancelled;
 
-    return Card(
+    return GlassMorphism(
+      blur: 15,
+      opacity: 0.1,
       margin: EdgeInsets.only(bottom: AppSizes.paddingMD),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(AppSizes.radiusLG),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSizes.radiusMD),
+        borderRadius: BorderRadius.circular(AppSizes.radiusLG),
         child: Padding(
           padding: EdgeInsets.all(AppSizes.paddingMD),
           child: Column(
@@ -44,17 +50,13 @@ class OrderCardWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Order #${order.id}',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                          'Order #${order.id.substring(0, 8)}',
+                          style: GlassTheme.headlineLarge.copyWith(fontSize: 18),
                         ),
                         SizedBox(height: AppSizes.spacingXS),
                         Text(
                           dateFormat.format(order.createdAt),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                          style: GlassTheme.labelSmall,
                         ),
                       ],
                     ),
@@ -68,9 +70,7 @@ class OrderCardWidget extends StatelessWidget {
               // Order Items Summary
               Text(
                 '${order.items.length} item${order.items.length > 1 ? 's' : ''}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                style: GlassTheme.bodyMedium,
               ),
 
               SizedBox(height: AppSizes.spacingXS),
@@ -83,14 +83,15 @@ class OrderCardWidget extends StatelessWidget {
                     children: [
                       Text(
                         '${item.quantity}x ',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: GlassTheme.bodyMedium.copyWith(
                               fontWeight: FontWeight.w600,
+                              color: GlassTheme.primaryBlue,
                             ),
                       ),
                       Expanded(
                         child: Text(
                           item.menuItem.name,
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: GlassTheme.bodyMedium.copyWith(color: GlassTheme.textPrimary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -104,15 +105,15 @@ class OrderCardWidget extends StatelessWidget {
               if (order.items.length > 2)
                 Text(
                   '+${order.items.length - 2} more item${order.items.length - 2 > 1 ? 's' : ''}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.primaryRed,
+                  style: GlassTheme.labelSmall.copyWith(
+                        color: GlassTheme.primaryBlue,
                         fontWeight: FontWeight.w600,
                       ),
                 ),
 
               SizedBox(height: AppSizes.spacingMD),
 
-              Divider(height: 1, color: AppColors.divider),
+              const Divider(height: 1, color: Colors.white24),
 
               SizedBox(height: AppSizes.spacingMD),
 
@@ -125,16 +126,13 @@ class OrderCardWidget extends StatelessWidget {
                     children: [
                       Text(
                         'Total',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                        style: GlassTheme.labelSmall,
                       ),
                       SizedBox(height: AppSizes.spacingXS),
                       Text(
                         '₹${order.totalPrice.toStringAsFixed(0)}',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primaryRed,
+                        style: GlassTheme.headlineLarge.copyWith(
+                              color: GlassTheme.primaryBlue,
                             ),
                       ),
                     ],
@@ -144,35 +142,42 @@ class OrderCardWidget extends StatelessWidget {
                   Row(
                     children: [
                       if (isActive && order.status == OrderStatus.placed && onCancel != null)
-                        OutlinedButton(
+                        TextButton(
                           onPressed: onCancel,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.error,
-                            side: const BorderSide(color: AppColors.error),
+                          style: TextButton.styleFrom(
+                            foregroundColor: GlassTheme.errorRed,
                           ),
                           child: const Text('Cancel'),
                         ),
 
                       if (!isActive && onReorder != null) ...[
-                        SizedBox(width: AppSizes.spacingSM),
-                        ElevatedButton(
+                        const SizedBox(width: 8),
+                        TextButton(
                           onPressed: onReorder,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryRed,
-                            foregroundColor: AppColors.textLight,
+                          style: TextButton.styleFrom(
+                            foregroundColor: GlassTheme.primaryBlue,
                           ),
                           child: const Text('Reorder'),
                         ),
                       ],
 
-                      SizedBox(width: AppSizes.spacingSM),
-                      OutlinedButton(
-                        onPressed: onTap,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primaryRed,
-                          side: const BorderSide(color: AppColors.primaryRed),
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: GlassTheme.buttonGradient,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text('Track'),
+                        child: InkWell(
+                          onTap: onTap,
+                          borderRadius: BorderRadius.circular(12),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Text(
+                              'Track',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -186,65 +191,36 @@ class OrderCardWidget extends StatelessWidget {
   }
 
   Widget _buildStatusBadge(BuildContext context, OrderStatus status) {
-    Color backgroundColor;
-    Color textColor;
+    Color color;
     IconData icon;
 
     switch (status) {
       case OrderStatus.placed:
-        backgroundColor = AppColors.info.withValues(alpha: 0.1);
-        textColor = AppColors.info;
+        color = GlassTheme.infoBlue;
         icon = Icons.receipt;
         break;
       case OrderStatus.preparing:
-        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
-        textColor = AppColors.warning;
+        color = GlassTheme.warningYellow;
         icon = Icons.restaurant;
         break;
       case OrderStatus.outForDelivery:
-        backgroundColor = AppColors.primaryRed.withValues(alpha: 0.1);
-        textColor = AppColors.primaryRed;
+        color = GlassTheme.primaryBlue;
         icon = Icons.delivery_dining;
         break;
       case OrderStatus.delivered:
-        backgroundColor = AppColors.success.withValues(alpha: 0.1);
-        textColor = AppColors.success;
+        color = GlassTheme.successGreen;
         icon = Icons.check_circle;
         break;
       case OrderStatus.cancelled:
-        backgroundColor = AppColors.error.withValues(alpha: 0.1);
-        textColor = AppColors.error;
+        color = GlassTheme.errorRed;
         icon = Icons.cancel;
         break;
     }
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSizes.paddingSM,
-        vertical: AppSizes.paddingXS,
-      ),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppSizes.radiusSM),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: AppSizes.iconXS,
-            color: textColor,
-          ),
-          SizedBox(width: AppSizes.spacingXS),
-          Text(
-            status.displayName,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-        ],
-      ),
+    return GlassStatusBadge(
+      text: status.displayName,
+      color: color,
+      icon: icon,
     );
   }
 }

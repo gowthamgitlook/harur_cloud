@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../core/constants/app_strings.dart';
+import '../../../../../core/theme/glass_theme.dart';
 import '../../../../../shared/widgets/loading_indicator.dart';
+import '../../../../../shared/widgets/animated_background.dart';
 import '../../../../auth/providers/auth_provider.dart';
 import '../../providers/order_provider.dart';
 import '../widgets/order_card_widget.dart';
@@ -45,52 +48,75 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(AppStrings.myOrders),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.primaryRed,
-          labelColor: AppColors.primaryRed,
-          unselectedLabelColor: AppColors.textSecondary,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'History'),
-          ],
+        title: const Text(AppStrings.myOrders, style: GlassTheme.headlineLarge),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                borderRadius: BorderRadius.circular(25),
+                gradient: GlassTheme.buttonGradient,
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: Colors.white,
+              unselectedLabelColor: GlassTheme.textSecondary,
+              tabs: const [
+                Tab(text: 'Active'),
+                Tab(text: 'History'),
+              ],
+            ),
+          ),
         ),
       ),
-      body: Consumer<OrderProvider>(
-        builder: (context, orderProvider, child) {
-          if (orderProvider.isLoading) {
-            return const LoadingIndicator(message: 'Loading orders...');
-          }
+      body: AnimatedBackground(
+        child: Stack(
+          children: [
+            Consumer<OrderProvider>(
+            builder: (context, orderProvider, child) {
+              if (orderProvider.isLoading) {
+                return const LoadingIndicator(message: 'Loading orders...');
+              }
 
-          if (orderProvider.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 60, color: AppColors.error),
-                  const SizedBox(height: 16),
-                  Text(orderProvider.error!, textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _refreshOrders,
-                    child: const Text('Retry'),
+              if (orderProvider.error != null) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 60, color: GlassTheme.errorRed),
+                      const SizedBox(height: 16),
+                      Text(orderProvider.error!, textAlign: TextAlign.center, style: GlassTheme.bodyLarge),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _refreshOrders,
+                        child: const Text('Retry'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          }
+                );
+              }
 
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              _buildOrdersList(orderProvider.activeOrders, 'No active orders'),
-              _buildOrdersList(orderProvider.orderHistory, 'No order history'),
-            ],
-          );
-        },
-      ),
+              return TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildOrdersList(orderProvider.activeOrders, 'No active orders'),
+                  _buildOrdersList(orderProvider.orderHistory, 'No order history'),
+                ],
+              );
+            },
+          ),
+        ],
+      ),),
     );
   }
 
@@ -100,11 +126,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[300]),
+            Icon(Icons.receipt_long_outlined, size: 80, color: Colors.white.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text(
               emptyMessage,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white.withValues(alpha: 0.5)),
             ),
           ],
         ),
@@ -128,7 +154,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             },
             onCancel: () => _showCancelDialog(context, order.id),
             onReorder: () => _handleReorder(context, order),
-          );
+          ).animate().fadeIn(delay: (index * 100).ms).slideY(begin: 0.1, end: 0);
         },
       ),
     );

@@ -9,6 +9,60 @@ import 'auth_service_interface.dart';
 class MockAuthService implements IAuthService {
   static const String _userKey = 'current_user';
 
+  @override
+  Future<UserModel> loginWithEmail(String email, String password) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 1));
+
+    // For mock, allow login with any valid-looking email and password
+    if (email.contains('@') && password.length >= 6) {
+      // Check if user exists in mock users
+      UserModel? user;
+      try {
+        user = mockUsers.firstWhere((u) => u.email == email);
+      } catch (e) {
+        // Create a default user if not found
+        user = UserModel(
+          id: 'mock_id_${DateTime.now().millisecondsSinceEpoch}',
+          name: email.split('@')[0],
+          phone: '+919000000000',
+          email: email,
+          role: UserRole.customer,
+        );
+      }
+      await saveUser(user!);
+      return user;
+    } else {
+      throw Exception('Invalid email or password. Password must be at least 6 characters.');
+    }
+  }
+
+  @override
+  Future<UserModel> registerWithEmail({
+    required String email,
+    required String password,
+    required String name,
+    required String phone,
+    required UserRole role,
+  }) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (email.contains('@') && password.length >= 6) {
+      final user = UserModel(
+        id: 'mock_id_${DateTime.now().millisecondsSinceEpoch}',
+        name: name,
+        phone: phone,
+        email: email,
+        role: role,
+      );
+      await saveUser(user);
+      return user;
+    } else {
+      throw Exception('Invalid email or password. Password must be at least 6 characters.');
+    }
+  }
+
   // Mock users for testing
   static final List<UserModel> mockUsers = [
     UserModel(

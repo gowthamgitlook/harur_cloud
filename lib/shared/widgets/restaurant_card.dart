@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
+import '../../core/theme/glass_theme.dart';
 import '../models/restaurant_model.dart';
 
 class RestaurantCard extends StatelessWidget {
@@ -17,19 +19,12 @@ class RestaurantCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: GlassMorphism(
+        blur: 15,
+        opacity: 0.1,
         margin: EdgeInsets.only(bottom: AppSizes.paddingMD),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(AppSizes.radiusLG),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadow,
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLG),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -47,8 +42,15 @@ class RestaurantCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       height: 180,
-                      color: AppColors.placeholder,
-                      child: const Icon(Icons.restaurant, size: 50),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            GlassTheme.primaryBlue.withValues(alpha: 0.1),
+                            GlassTheme.secondaryBlue.withValues(alpha: 0.1),
+                          ],
+                        ),
+                      ),
+                      child: const Icon(Icons.restaurant, size: 50, color: GlassTheme.primaryBlue),
                     ),
                   ),
                 ),
@@ -58,9 +60,9 @@ class RestaurantCard extends StatelessWidget {
                   left: 0,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.only(
+                    decoration: BoxDecoration(
+                      gradient: GlassTheme.buttonGradient,
+                      borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(4),
                         bottomRight: Radius.circular(4),
                       ),
@@ -70,7 +72,7 @@ class RestaurantCard extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 14,
                       ),
                     ),
                   ),
@@ -79,22 +81,21 @@ class RestaurantCard extends StatelessWidget {
                 Positioned(
                   bottom: 10,
                   right: 10,
-                  child: Container(
+                  child: GlassMorphism(
+                    blur: 10,
+                    opacity: 0.2,
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    borderRadius: BorderRadius.circular(8),
                     child: Row(
                       children: [
                         Text(
                           restaurant.rating.toString(),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: GlassTheme.textPrimary),
                         ),
-                        const Icon(Icons.star, color: Colors.green, size: 16),
+                        const Icon(Icons.star, color: GlassTheme.warningYellow, size: 16),
                         Text(
                           ' (${restaurant.reviewCount}+)',
-                          style: const TextStyle(fontSize: 10, color: Colors.grey),
+                          style: const TextStyle(fontSize: 10, color: GlassTheme.textSecondary),
                         ),
                       ],
                     ),
@@ -113,31 +114,27 @@ class RestaurantCard extends StatelessWidget {
                     children: [
                       Text(
                         restaurant.name,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: GlassTheme.headlineLarge.copyWith(fontSize: 18),
                       ),
                       Text(
                         restaurant.deliveryTime,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: GlassTheme.bodyLarge.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     restaurant.cuisine,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                    style: GlassTheme.bodyMedium,
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.timer_outlined, size: 16, color: Colors.grey),
+                      const Icon(Icons.timer_outlined, size: 16, color: GlassTheme.primaryBlue),
                       const SizedBox(width: 4),
                       Text(
                         '${restaurant.deliveryTime} • ₹${restaurant.priceForTwo.toInt()} for two',
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style: GlassTheme.bodyMedium.copyWith(color: GlassTheme.textSecondary),
                       ),
                     ],
                   ),
@@ -147,6 +144,9 @@ class RestaurantCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ).animate().scale(
+      begin: const Offset(1, 1),
+      end: const Offset(1.02, 1.02),
+    ).then().scale(begin: const Offset(1.02, 1.02), end: const Offset(1, 1));
   }
 }

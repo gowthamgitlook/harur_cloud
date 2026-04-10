@@ -2,11 +2,11 @@ class AppConfig {
   AppConfig._();
 
   // Toggle between mock and real services
-  static const bool useMockServices = true;
+  static const bool useMockServices = false;
 
   // API Configuration (for future Firebase integration)
   static const String apiBaseUrl = '';
-  static const String firebaseProjectId = '';
+  static const String firebaseProjectId = 'harur-cloud';
 
   // App Version
   static const String appVersion = '1.0.0';

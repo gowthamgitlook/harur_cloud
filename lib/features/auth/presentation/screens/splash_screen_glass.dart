@@ -63,6 +63,9 @@ class _SplashScreenGlassState extends State<SplashScreenGlass>
       case UserRole.delivery:
         Navigator.of(context).pushReplacementNamed(AppRoutes.deliveryMain);
         break;
+      case UserRole.restaurantOwner:
+        Navigator.of(context).pushReplacementNamed(AppRoutes.adminMain);
+        break;
     }
   }
 

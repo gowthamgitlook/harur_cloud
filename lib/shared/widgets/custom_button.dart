@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
+import '../../core/theme/glass_theme.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -30,60 +31,66 @@ class CustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isOutlined) {
       return SizedBox(
-        width: width,
-        height: height ?? AppSizes.buttonHeightMD,
+        width: width ?? double.infinity,
+        height: height ?? 56,
         child: OutlinedButton(
-          onPressed: isLoading ? null : onPressed,
+          onPressed: (isLoading || onPressed == null) ? null : onPressed,
           style: OutlinedButton.styleFrom(
-            foregroundColor: textColor ?? AppColors.primaryRed,
+            foregroundColor: textColor ?? Theme.of(context).colorScheme.primary,
             side: BorderSide(
-              color: textColor ?? AppColors.primaryRed,
+              color: (textColor ?? Theme.of(context).colorScheme.primary).withValues(alpha: 0.3),
+              width: 1.5,
             ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            backgroundColor: Colors.transparent,
           ),
-          child: _buildChild(),
+          child: _buildChild(context),
         ),
       );
     }
 
-    return SizedBox(
+    return GlassButton(
+      text: text,
+      onPressed: onPressed ?? () {},
+      icon: icon,
       width: width,
-      height: height ?? AppSizes.buttonHeightMD,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primaryRed,
-          foregroundColor: textColor ?? AppColors.textLight,
-        ),
-        child: _buildChild(),
-      ),
+      height: height ?? 56,
+      isLoading: isLoading,
     );
   }
 
-  Widget _buildChild() {
+  Widget _buildChild(BuildContext context) {
     if (isLoading) {
       return SizedBox(
-        height: AppSizes.loaderSM,
-        width: AppSizes.loaderSM,
+        height: 24,
+        width: 24,
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor: AlwaysStoppedAnimation<Color>(
-            isOutlined ? AppColors.primaryRed : AppColors.textLight,
+            isOutlined ? (textColor ?? Theme.of(context).colorScheme.primary) : Colors.white,
           ),
         ),
       );
     }
 
-    if (icon != null) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: AppSizes.iconSM),
-          SizedBox(width: AppSizes.spacingSM),
-          Text(text),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[
+          Icon(icon, size: 20),
+          const SizedBox(width: 8),
         ],
-      );
-    }
-
-    return Text(text);
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
+    );
   }
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "658997155851",
+    "project_id": "harur-cloud",
+    "storage_bucket": "harur-cloud.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:658997155851:android:723beebf89a61dcda48f0e",
+        "android_client_info": {
+          "package_name": "cloud.kitchen"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9aeD94-WWpXJuKlxQ43V4xm93B8dKuw8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

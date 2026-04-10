@@ -74,6 +74,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       case UserRole.delivery:
         Navigator.of(context).pushReplacementNamed(AppRoutes.deliveryMain);
         break;
+      case UserRole.restaurantOwner:
+        Navigator.of(context).pushReplacementNamed(AppRoutes.adminMain);
+        break;
     }
   }
 

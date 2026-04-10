@@ -2,12 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../../../../core/theme/glass_theme.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../shared/enums/user_role.dart';
-import '../../../../shared/widgets/custom_button.dart';
+import '../../../../shared/widgets/animated_background.dart';
 import '../../providers/auth_provider.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
@@ -56,7 +57,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter 6-digit OTP'),
-          backgroundColor: AppColors.error,
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -75,13 +77,21 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     if (!mounted) return;
 
     if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login successful!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       // Navigate based on user role
       _navigateToRoleBasedHome(authProvider.userRole!);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authProvider.errorMessage ?? 'Invalid OTP'),
-          backgroundColor: AppColors.error,
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       _otpController.clear();
@@ -108,6 +118,12 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           (route) => false,
         );
         break;
+      case UserRole.restaurantOwner:
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          AppRoutes.adminMain, // Default to admin main for now
+          (route) => false,
+        );
+        break;
     }
   }
 
@@ -128,7 +144,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('OTP resent successfully'),
-        backgroundColor: AppColors.success,
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -142,139 +159,178 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(AppStrings.verifyOTP),
+        title: const Text(AppStrings.verifyOTP, style: TextStyle(color: GlassTheme.primaryBlue, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: GlassTheme.primaryBlue),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(AppSizes.paddingLG),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(height: AppSizes.spacingXL),
-              // Icon
-              Center(
-                child: Container(
-                  width: AppSizes.imageLG,
-                  height: AppSizes.imageLG,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryRed.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.message,
-                    size: AppSizes.iconXXL,
-                    color: AppColors.primaryRed,
-                  ),
-                ),
-              ),
-              SizedBox(height: AppSizes.spacingLG),
-              // Title
-              Text(
-                AppStrings.enterOTP,
-                style: Theme.of(context).textTheme.displaySmall,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSizes.spacingSM),
-              // Description
-              Text(
-                'We sent a code to',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+      body: AnimatedBackground(
+        showParticles: true,
+        colors: [
+          GlassTheme.primaryBlue.withValues(alpha: 0.1),
+          GlassTheme.secondaryBlue.withValues(alpha: 0.05),
+          Colors.white,
+        ],
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(AppSizes.paddingLG),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: AppSizes.spacingXL),
+                // Icon
+                Center(
+                  child: Container(
+                    width: AppSizes.imageLG,
+                    height: AppSizes.imageLG,
+                    decoration: BoxDecoration(
+                      gradient: GlassTheme.primaryGradient,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: GlassTheme.primaryBlue.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSizes.spacingXS),
-              Text(
-                widget.phoneNumber,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.primaryRed,
-                      fontWeight: FontWeight.w600,
+                    child: const Icon(
+                      Icons.mark_email_read_outlined,
+                      size: AppSizes.iconXXL,
+                      color: GlassTheme.primaryBlue,
                     ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSizes.spacingXL),
-              // OTP Input
-              PinCodeTextField(
-                appContext: context,
-                length: 6,
-                controller: _otpController,
-                keyboardType: TextInputType.number,
-                animationType: AnimationType.fade,
-                pinTheme: PinTheme(
-                  shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(AppSizes.radiusSM),
-                  fieldHeight: 50,
-                  fieldWidth: 45,
-                  activeFillColor: AppColors.surfaceLight,
-                  inactiveFillColor: AppColors.surfaceLight,
-                  selectedFillColor: AppColors.surfaceLight,
-                  activeColor: AppColors.primaryRed,
-                  inactiveColor: AppColors.divider,
-                  selectedColor: AppColors.primaryRed,
-                ),
-                enableActiveFill: true,
-                onCompleted: (value) => _verifyOTP(),
-                onChanged: (value) {},
-              ),
-              SizedBox(height: AppSizes.spacingLG),
-              // Timer
-              if (_secondsRemaining > 0)
+                  ),
+                ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
+                SizedBox(height: AppSizes.spacingLG),
+                // Title
                 Text(
-                  'Code expires in $_timerText',
+                  AppStrings.enterOTP,
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: GlassTheme.primaryBlue,
+                  ),
+                  textAlign: TextAlign.center,
+                ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
+                SizedBox(height: AppSizes.spacingSM),
+                // Description
+                Text(
+                  'We sent a code to',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: GlassTheme.textSecondary,
                       ),
                   textAlign: TextAlign.center,
-                ),
-              SizedBox(height: AppSizes.spacingMD),
-              // Resend OTP
-              Center(
-                child: TextButton(
-                  onPressed: _secondsRemaining == 0 ? _resendOTP : null,
-                  child: Text(
-                    _secondsRemaining == 0
-                        ? AppStrings.resendOTP
-                        : 'Resend OTP in $_timerText',
-                  ),
-                ),
-              ),
-              SizedBox(height: AppSizes.spacingLG),
-              // Verify Button
-              CustomButton(
-                text: AppStrings.verifyOTP,
-                onPressed: _isLoading ? null : _verifyOTP,
-                isLoading: _isLoading,
-              ),
-              SizedBox(height: AppSizes.spacingLG),
-              // Hint
-              Container(
-                padding: EdgeInsets.all(AppSizes.paddingMD),
-                decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppSizes.radiusSM),
-                  border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: AppColors.warning,
-                      size: AppSizes.iconSM,
-                    ),
-                    SizedBox(width: AppSizes.spacingSM),
-                    Expanded(
-                      child: Text(
-                        'For testing, use OTP: 123456',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.warning,
-                            ),
+                ).animate().fadeIn(delay: 400.ms),
+                SizedBox(height: AppSizes.spacingXS),
+                Text(
+                  widget.phoneNumber,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: GlassTheme.primaryBlue,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                  textAlign: TextAlign.center,
+                ).animate().fadeIn(delay: 500.ms),
+                SizedBox(height: AppSizes.spacingXL),
+                
+                GlassMorphism(
+                  padding: EdgeInsets.all(AppSizes.paddingLG),
+                  borderRadius: BorderRadius.circular(24),
+                  child: Column(
+                    children: [
+                      // OTP Input
+                      PinCodeTextField(
+                        appContext: context,
+                        length: 6,
+                        controller: _otpController,
+                        keyboardType: TextInputType.number,
+                        animationType: AnimationType.scale,
+                        pinTheme: PinTheme(
+                          shape: PinCodeFieldShape.box,
+                          borderRadius: BorderRadius.circular(12),
+                          fieldHeight: 50,
+                          fieldWidth: 40,
+                          activeFillColor: Colors.white.withValues(alpha: 0.2),
+                          inactiveFillColor: Colors.white.withValues(alpha: 0.1),
+                          selectedFillColor: Colors.white.withValues(alpha: 0.3),
+                          activeColor: GlassTheme.primaryBlue,
+                          inactiveColor: Colors.white.withValues(alpha: 0.3),
+                          selectedColor: GlassTheme.primaryBlue,
+                        ),
+                        cursorColor: GlassTheme.primaryBlue,
+                        enableActiveFill: true,
+                        onCompleted: (value) => _verifyOTP(),
+                        onChanged: (value) {},
+                      ),
+                      SizedBox(height: AppSizes.spacingLG),
+                      // Timer
+                      if (_secondsRemaining > 0)
+                        Text(
+                          'Code expires in $_timerText',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: GlassTheme.textSecondary,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      SizedBox(height: AppSizes.spacingMD),
+                      // Resend OTP
+                      Center(
+                        child: TextButton(
+                          onPressed: _secondsRemaining == 0 ? _resendOTP : null,
+                          child: Text(
+                            _secondsRemaining == 0
+                                ? AppStrings.resendOTP
+                                : 'Resend OTP in $_timerText',
+                            style: TextStyle(
+                              color: _secondsRemaining == 0 
+                                ? GlassTheme.primaryBlue 
+                                : GlassTheme.textTertiary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: AppSizes.spacingLG),
+                      // Verify Button
+                      GlassButton(
+                        text: AppStrings.verifyOTP,
+                        onPressed: _isLoading ? () {} : _verifyOTP,
+                        isLoading: _isLoading,
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1, end: 0),
+                
+                SizedBox(height: AppSizes.spacingLG),
+                // Hint
+                GlassMorphism(
+                  padding: EdgeInsets.all(AppSizes.paddingMD),
+                  opacity: 0.1,
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        color: GlassTheme.primaryBlue,
+                        size: AppSizes.iconSM,
+                      ),
+                      SizedBox(width: AppSizes.spacingSM),
+                      Expanded(
+                        child: Text(
+                          'For testing, use OTP: 123456',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: GlassTheme.primaryBlue,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(delay: 800.ms),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,6 +1,19 @@
 import '../../../../shared/models/user_model.dart';
+import '../../../../shared/enums/user_role.dart';
 
 abstract class IAuthService {
+  /// Login with email and password
+  Future<UserModel> loginWithEmail(String email, String password);
+
+  /// Register with email and password
+  Future<UserModel> registerWithEmail({
+    required String email,
+    required String password,
+    required String name,
+    required String phone,
+    required UserRole role,
+  });
+
   /// Send OTP to the given phone number
   Future<bool> sendOTP(String phoneNumber);
 

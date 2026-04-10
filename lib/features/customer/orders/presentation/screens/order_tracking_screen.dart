@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
+import '../../../../../core/theme/glass_theme.dart';
 import '../../../../../shared/models/order_model.dart';
 import '../../../../../shared/enums/order_status.dart';
 import '../../providers/order_provider.dart';
 import '../widgets/order_timeline_widget.dart';
 import '../../../../../shared/widgets/live_tracking_map.dart';
+import '../../../../../shared/widgets/animated_background.dart';
 import '../../../../../core/utils/permissions_handler.dart';
 
 class OrderTrackingScreen extends StatefulWidget {
@@ -59,14 +62,16 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text('Track Order #${_currentOrder.id.substring(0, 8)}'),
+        backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Stack(
-        children: [
-          // Full Screen Map Background
+      body: AnimatedBackground(
+        child: Stack(
+          children: [
+            // Full Screen Map Background
           Positioned.fill(
             bottom: 300, // Show map mostly at the top
             child: LiveTrackingMap(
@@ -82,18 +87,11 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             minChildSize: 0.4,
             maxChildSize: 0.9,
             builder: (context, scrollController) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
+              return GlassMorphism(
+                blur: 20,
+                opacity: 0.1,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                padding: EdgeInsets.zero,
                 child: ListView(
                   controller: scrollController,
                   padding: const EdgeInsets.all(20),
@@ -104,7 +102,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: Colors.white.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -122,69 +120,69 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                             children: [
                               Text(
                                 _getStatusTitle(_currentOrder.status),
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                style: GlassTheme.headlineLarge,
                               ),
                               Text(
                                 _getStatusMessage(_currentOrder.status),
-                                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                                style: GlassTheme.bodyMedium,
                               ),
                             ],
                           ),
                         ),
                       ],
-                    ),
+                    ).animate().fadeIn().slideX(begin: -0.1, end: 0),
 
                     if (_currentOrder.status == OrderStatus.outForDelivery) ...[
                       const SizedBox(height: 20),
-                      _buildDeliveryPartnerCard(),
+                      _buildDeliveryPartnerCard().animate().fadeIn().scale(),
                     ],
 
                     const SizedBox(height: 24),
-                    const Divider(),
+                    const Divider(color: Colors.white24),
                     const SizedBox(height: 16),
 
                     // Timeline
-                    const Text('Order Status', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('Order Status', style: GlassTheme.headlineLarge.copyWith(fontSize: 18)),
                     const SizedBox(height: 16),
-                    OrderTimelineWidget(order: _currentOrder),
+                    OrderTimelineWidget(order: _currentOrder).animate().fadeIn(delay: 200.ms),
 
                     const SizedBox(height: 24),
-                    const Divider(),
+                    const Divider(color: Colors.white24),
                     const SizedBox(height: 16),
 
                     // Address
-                    const Text('Delivery Location', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('Delivery Location', style: GlassTheme.headlineLarge.copyWith(fontSize: 18)),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, color: AppColors.primaryRed, size: 20),
+                        const Icon(Icons.location_on, color: GlassTheme.primaryBlue, size: 20),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             '${_currentOrder.deliveryAddress.label}: ${_currentOrder.deliveryAddress.fullAddress}',
-                            style: TextStyle(color: Colors.grey[700]),
+                            style: GlassTheme.bodyMedium,
                           ),
                         ),
                       ],
-                    ),
+                    ).animate().fadeIn(delay: 400.ms),
 
                     const SizedBox(height: 24),
-                    const Divider(),
+                    const Divider(color: Colors.white24),
                     const SizedBox(height: 16),
 
                     // Items Summary
-                    Text('Items (${_currentOrder.items.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('Items (${_currentOrder.items.length})', style: GlassTheme.headlineLarge.copyWith(fontSize: 18)),
                     const SizedBox(height: 12),
                     ..._currentOrder.items.map((item) => Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Row(
                         children: [
-                          Text('${item.quantity} x ', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryRed)),
-                          Expanded(child: Text(item.menuItem.name)),
-                          Text('₹${item.totalPrice.toStringAsFixed(0)}'),
+                          Text('${item.quantity} x ', style: const TextStyle(fontWeight: FontWeight.bold, color: GlassTheme.primaryBlue)),
+                          Expanded(child: Text(item.menuItem.name, style: GlassTheme.bodyMedium)),
+                          Text('₹${item.totalPrice.toStringAsFixed(0)}', style: GlassTheme.bodyMedium),
                         ],
                       ),
-                    )),
+                    )).toList().animate(interval: 50.ms).fadeIn(),
                     
                     const SizedBox(height: 40),
                   ],
@@ -193,7 +191,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             },
           ),
         ],
-      ),
+      ),),
     );
   }
 
@@ -201,14 +199,14 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryRed.withValues(alpha: 0.05),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryRed.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           const CircleAvatar(
-            backgroundColor: AppColors.primaryRed,
+            backgroundColor: GlassTheme.primaryBlue,
             child: Icon(Icons.person, color: Colors.white),
           ),
           const SizedBox(width: 12),
@@ -218,16 +216,16 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               children: [
                 Text(
                   _currentOrder.deliveryPartnerName ?? 'Rahul (Partner)',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: GlassTheme.bodyLarge.copyWith(fontWeight: FontWeight.bold),
                 ),
-                const Text('Arriving in 5 mins', style: TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.bold)),
+                const Text('Arriving in 5 mins', style: TextStyle(fontSize: 12, color: GlassTheme.successGreen, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
           IconButton(
             onPressed: () => PermissionsHandler.makePhoneCall('9876543210'),
-            icon: const Icon(Icons.call, color: Colors.green),
-            style: IconButton.styleFrom(backgroundColor: Colors.white),
+            icon: const Icon(Icons.call, color: GlassTheme.successGreen),
+            style: IconButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.1)),
           ),
         ],
       ),
@@ -238,11 +236,11 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     IconData icon;
     Color color;
     switch (status) {
-      case OrderStatus.placed: icon = Icons.receipt; color = Colors.blue; break;
-      case OrderStatus.preparing: icon = Icons.restaurant; color = Colors.orange; break;
-      case OrderStatus.outForDelivery: icon = Icons.delivery_dining; color = AppColors.primaryRed; break;
-      case OrderStatus.delivered: icon = Icons.check_circle; color = Colors.green; break;
-      case OrderStatus.cancelled: icon = Icons.cancel; color = Colors.red; break;
+      case OrderStatus.placed: icon = Icons.receipt; color = GlassTheme.infoBlue; break;
+      case OrderStatus.preparing: icon = Icons.restaurant; color = GlassTheme.warningYellow; break;
+      case OrderStatus.outForDelivery: icon = Icons.delivery_dining; color = GlassTheme.primaryBlue; break;
+      case OrderStatus.delivered: icon = Icons.check_circle; color = GlassTheme.successGreen; break;
+      case OrderStatus.cancelled: icon = Icons.cancel; color = GlassTheme.errorRed; break;
     }
 
     return Container(
