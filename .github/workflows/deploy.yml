@@ -93,10 +93,20 @@ jobs:
       - name: Build Web
         run: flutter build web --release
 
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: harur-cloud
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy Firestore rules + Hosting
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-sa.json
+          GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-sa.json \
+            firebase deploy --project harur-cloud --only firestore:rules,hosting
+          rm /tmp/firebase-sa.json
+
+      - name: Deploy Storage rules (best-effort)
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-sa.json
+          GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-sa.json \
+            firebase deploy --project harur-cloud --only storage \
+            || echo "Storage rules skipped (Storage not yet enabled)"
+          rm -f /tmp/firebase-sa.json
