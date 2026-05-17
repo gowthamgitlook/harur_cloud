@@ -96,17 +96,62 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: Deploy Firestore rules + Hosting
+      - name: Deploy Hosting
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-sa.json
           GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-sa.json \
-            firebase deploy --project harur-cloud --only firestore:rules,hosting
+            firebase deploy --project harur-cloud --only hosting
           rm /tmp/firebase-sa.json
 
-      - name: Deploy Storage rules (best-effort)
+      - name: Deploy Firestore security rules via REST API
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-sa.json
-          GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-sa.json \
-            firebase deploy --project harur-cloud --only storage \
-            || echo "Storage rules skipped (Storage not yet enabled)"
-          rm -f /tmp/firebase-sa.json
+          pip install google-auth requests --quiet
+          python3 << 'PYEOF'
+          import json, requests, sys
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+
+          SA = json.loads(r"""${{ secrets.FIREBASE_SERVICE_ACCOUNT }}""")
+          PROJECT = 'harur-cloud'
+
+          creds = service_account.Credentials.from_service_account_info(
+              SA, scopes=['https://www.googleapis.com/auth/firebase'])
+          creds.refresh(Request())
+          hdrs = {'Authorization': f'Bearer {creds.token}', 'Content-Type': 'application/json'}
+          base = f'https://firebaserules.googleapis.com/v1/projects/{PROJECT}'
+
+          with open('firestore.rules') as f:
+              rules = f.read()
+
+          r1 = requests.post(f'{base}/rulesets', headers=hdrs,
+              json={'source': {'files': [{'content': rules, 'name': 'firestore.rules'}]}})
+          if not r1.ok:
+              print(f'Create ruleset failed: {r1.status_code} {r1.text}', file=sys.stderr)
+              sys.exit(1)
+          ruleset = r1.json()['name']
+          print(f'Ruleset created: {ruleset}')
+
+          r2 = requests.patch(
+              f'{base}/releases/cloud.firestore',
+              headers=hdrs,
+              json={
+                  'release': {
+                      'name': f'projects/{PROJECT}/releases/cloud.firestore',
+                      'rulesetName': ruleset,
+                  },
+                  'updateMask': 'rulesetName',
+              })
+          if r2.ok:
+              print('Firestore rules deployed successfully')
+          else:
+              print(f'Update release: {r2.status_code} {r2.text[:300]}')
+              # Try creating release if it doesn't exist
+              r3 = requests.post(f'{base}/releases', headers=hdrs,
+                  json={'name': f'projects/{PROJECT}/releases/cloud.firestore',
+                        'rulesetName': ruleset})
+              if r3.ok:
+                  print('Firestore rules release created successfully')
+              else:
+                  print(f'Create release failed: {r3.status_code} {r3.text}', file=sys.stderr)
+                  sys.exit(1)
+          PYEOF

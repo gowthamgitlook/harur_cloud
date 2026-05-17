@@ -5,6 +5,8 @@ class PermissionService {
   PermissionService._();
 
   static Future<void> requestInitialPermissions() async {
+    // Web: browser handles permissions contextually — never block the splash.
+    if (kIsWeb) return;
     try {
       Map<Permission, PermissionStatus> statuses = await [
         Permission.location,
