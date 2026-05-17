@@ -117,7 +117,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildSettingsItem(Icons.ad_units_outlined, 'Manage Banners', 'Edit app advertisements', () {
                 Navigator.pushNamed(context, AppRoutes.adminBanners);
               }),
-              _buildSettingsItem(Icons.restaurant_menu, 'Manage Menu', 'Update items and prices', () {}),
+              _buildSettingsItem(Icons.restaurant_menu, 'Manage Menu', 'Update items and prices', () {
+                Navigator.pushNamed(context, AppRoutes.adminMain);
+              }),
               const SizedBox(height: 12),
             ],
 

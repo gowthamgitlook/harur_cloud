@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import '../../../../config/app_config.dart';
 import '../../../../shared/enums/food_category.dart';
 import '../../../../shared/models/menu_item_model.dart';
+import '../data/services/firestore_admin_menu_service.dart';
 import '../data/services/mock_menu_service.dart';
 
 class AdminMenuProvider with ChangeNotifier {
-  final MockMenuService _menuService = MockMenuService();
+  final dynamic _menuService = AppConfig.useMockServices
+      ? MockMenuService()
+      : FirestoreAdminMenuService();
 
   List<MenuItemModel> _menuItems = [];
   FoodCategory? _categoryFilter;

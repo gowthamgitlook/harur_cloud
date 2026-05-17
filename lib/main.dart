@@ -8,6 +8,7 @@ import 'config/app_config.dart';
 import 'firebase_options.dart';
 import 'core/constants/app_colors.dart';
 import 'features/customer/home/data/repositories/menu_repository.dart';
+import 'features/customer/home/data/repositories/firestore_menu_repository.dart';
 import 'features/customer/home/data/repositories/mock_menu_repository.dart';
 
 /// Harur Cloud Kitchen - Senior Dev Entry Point
@@ -58,7 +59,7 @@ void main() {
       try {
         await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
         debugPrint('✅ [FIREBASE] Live connection established');
-        menuRepository = MockMenuRepository(); // Fallback for now, replace with FirestoreRepository later
+        menuRepository = FirestoreMenuRepository();
       } catch (e) {
         debugPrint('⚠️ [FIREBASE] Initialization failed. Defaulting to Mock Mode. Error: $e');
         menuRepository = MockMenuRepository();

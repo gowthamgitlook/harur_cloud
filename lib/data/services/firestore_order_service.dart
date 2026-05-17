@@ -149,7 +149,37 @@ class FirestoreOrderService implements IOrderService {
   Future<Map<String, double>> getDeliveryPartnerLocation(String orderId) async =>
       {'latitude': 12.0540, 'longitude': 78.4822};
 
+  Future<Map<OrderStatus, int>> getOrderStatsAsync(String userId) async {
+    final orders = await getUserOrders(userId);
+    final stats = <OrderStatus, int>{};
+    for (final o in orders) {
+      stats[o.status] = (stats[o.status] ?? 0) + 1;
+    }
+    return stats;
+  }
+
   Map<OrderStatus, int> getOrderStats(String userId) => {};
+
+  Future<Map<String, dynamic>> getDashboardStatsAsync() async {
+    final snap = await _db.collection('orders').get();
+    final orders = snap.docs.map((d) => _fromDoc(d)).toList();
+    final revenue = orders
+        .where((o) => o.status == OrderStatus.delivered)
+        .fold(0.0, (acc, o) => acc + o.totalPrice);
+    final statusCounts = <String, int>{};
+    for (final o in orders) {
+      statusCounts[o.status.name] = (statusCounts[o.status.name] ?? 0) + 1;
+    }
+    return {
+      'totalOrders': orders.length,
+      'totalRevenue': revenue,
+      'pendingOrders': statusCounts[OrderStatus.placed.name] ?? 0,
+      'preparingOrders': statusCounts[OrderStatus.preparing.name] ?? 0,
+      'outForDeliveryOrders': statusCounts[OrderStatus.outForDelivery.name] ?? 0,
+      'deliveredOrders': statusCounts[OrderStatus.delivered.name] ?? 0,
+      'cancelledOrders': statusCounts[OrderStatus.cancelled.name] ?? 0,
+    };
+  }
 
   Map<String, dynamic> getDashboardStats() => {};
 
