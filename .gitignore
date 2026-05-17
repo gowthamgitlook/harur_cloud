@@ -48,9 +48,8 @@ android/app/google-services.json
 # Local properties (contains API keys)
 android/local.properties
 
-# APK build outputs
-apks/
-*.apk
+# APK build outputs (tracked in apks/ folder intentionally)
+# *.apk
 
 # Firebase service account (never commit)
 *firebase-adminsdk*.json
