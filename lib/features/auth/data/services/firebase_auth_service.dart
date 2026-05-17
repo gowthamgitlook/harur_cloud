@@ -139,18 +139,27 @@ class FirebaseAuthService implements IAuthService {
       final user = result.user;
       if (user == null) throw Exception('Verification failed');
 
-      // Check Firestore for existing profile
-      UserModel? existing = await _userService.getUser(user.uid);
-      if (existing == null) {
-        existing = UserModel(
-          id: user.uid,
-          name: user.displayName ?? 'User',
-          phone: phoneNumber,
-          email: user.email,
-          role: UserRole.customer,
-        );
-        await _userService.createUser(existing);
+      final authUser = UserModel(
+        id: user.uid,
+        name: user.displayName ?? 'User',
+        phone: phoneNumber,
+        email: user.email,
+        role: UserRole.customer,
+      );
+
+      UserModel existing;
+      try {
+        final stored = await _userService.getUser(user.uid);
+        if (stored != null) {
+          existing = stored;
+        } else {
+          existing = authUser;
+          await _userService.createUser(existing);
+        }
+      } catch (_) {
+        existing = authUser;
       }
+
       await saveUser(existing);
       return existing;
     } on FirebaseAuthException catch (e) {
@@ -182,36 +191,42 @@ class FirebaseAuthService implements IAuthService {
 
       if (firebaseUser == null) throw Exception('Google sign-in failed');
 
-      UserModel? existing = await _userService.getUser(firebaseUser.uid);
-      if (existing == null) {
-        existing = UserModel(
-          id: firebaseUser.uid,
-          name: firebaseUser.displayName ?? 'User',
-          email: firebaseUser.email,
-          phone: firebaseUser.phoneNumber ?? '',
-          role: UserRole.customer,
-        );
-        await _userService.createUser(existing);
+      // Build a user from Firebase Auth data — used as fallback if Firestore is unavailable
+      final authUser = UserModel(
+        id: firebaseUser.uid,
+        name: firebaseUser.displayName ?? 'User',
+        email: firebaseUser.email,
+        phone: firebaseUser.phoneNumber ?? '',
+        role: UserRole.customer,
+      );
+
+      UserModel existing;
+      try {
+        final stored = await _userService.getUser(firebaseUser.uid);
+        if (stored != null) {
+          existing = stored;
+        } else {
+          existing = authUser;
+          await _userService.createUser(existing);
+        }
+      } catch (_) {
+        // Firestore unavailable (database not created yet, or offline)
+        // Use Firebase Auth data directly so login still succeeds
+        existing = authUser;
       }
+
       await saveUser(existing);
       return existing;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'operation-not-allowed') {
-        throw Exception('Google Sign-In is not enabled. Please contact support.');
+        throw Exception('Google Sign-In is not enabled in Firebase Console.');
       }
       if (e.code == 'popup-closed-by-user' || e.code == 'cancelled-popup-request') {
         throw Exception('Sign-in was cancelled.');
       }
       throw Exception(e.message ?? 'Google sign-in failed');
     } catch (e) {
-      final msg = e.toString();
-      if (msg.contains('Null check operator') || msg.contains('null value')) {
-        throw Exception(
-          'Google Sign-In is not configured in Firebase Console. '
-          'Please enable Google as a sign-in provider.',
-        );
-      }
-      throw Exception('Google login failed: $msg');
+      throw Exception('Google login failed: $e');
     }
   }
 
