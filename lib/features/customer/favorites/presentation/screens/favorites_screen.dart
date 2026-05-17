@@ -109,7 +109,7 @@ class _FavoriteItemCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.star, size: 14, color: Colors.amber),
                   const SizedBox(width: 2),
-                  Text('${item.rating!.toStringAsFixed(1)}', style: ZomatoTheme.bodyMedium.copyWith(fontSize: 12)),
+                  Text(item.rating!.toStringAsFixed(1), style: ZomatoTheme.bodyMedium.copyWith(fontSize: 12)),
                 ],
               ),
           ],

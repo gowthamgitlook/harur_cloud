@@ -30,17 +30,48 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _sendOTP() async {
     if (!_formKey.currentState!.validate()) return;
     final phone = '+91${_phoneController.text.trim()}';
-    _performLogin(phone);
+
+    if (AppConfig.useMockServices) {
+      // Mock: auto-verify with hardcoded OTP
+      _performLogin(phone);
+      return;
+    }
+
+    // Production: send OTP then navigate to OTP screen
+    setState(() => _isLoading = true);
+    final authProvider = context.read<AuthProvider>();
+    try {
+      final success = await authProvider.sendOTP(phone);
+      if (!mounted) return;
+      if (success) {
+        Navigator.pushNamed(context, AppRoutes.otpVerification, arguments: phone);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.errorMessage ?? 'Failed to send OTP. Check your number.'),
+            backgroundColor: ZomatoTheme.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: ZomatoTheme.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
+  // Used only in mock mode for quick role-testing buttons
   Future<void> _performLogin(String phone) async {
     setState(() => _isLoading = true);
     final authProvider = context.read<AuthProvider>();
-    
     try {
       final success = await authProvider.sendOTP(phone);
       if (success) {
-        final verified = await authProvider.verifyOTP(phone, '123456');
+        final verified = await authProvider.verifyOTP(phone, AppConfig.mockOTP);
         if (!mounted) return;
         if (verified && authProvider.currentUser != null) {
           _navigateToRoleHome(authProvider.currentUser!.role);
@@ -141,6 +172,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintText: 'Phone Number',
                       ),
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) return 'Phone number is required';
+                        if (value.trim().length != 10) return 'Enter a valid 10-digit mobile number';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(

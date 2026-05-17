@@ -23,24 +23,21 @@ class _SplashScreenGlassState extends State<SplashScreenGlass> {
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // 1. Initial Permission Request (Camera, Location, etc.)
     await PermissionService.requestInitialPermissions();
+    if (!mounted) return;
 
-    await Future.microtask(() async {
-      final authProvider = context.read<AuthProvider>();
-      await authProvider.initialize();
+    // Capture provider before any async gap to satisfy use_build_context_synchronously
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.initialize();
+    await Future.delayed(const Duration(milliseconds: 2500));
 
-      // Wait for a smooth brand transition
-      await Future.delayed(const Duration(milliseconds: 2500));
+    if (!mounted) return;
 
-      if (!mounted) return;
-
-      if (authProvider.isAuthenticated && authProvider.userRole != null) {
-        _navigateToRoleBasedHome(authProvider.userRole!);
-      } else {
-        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-      }
-    });
+    if (authProvider.isAuthenticated && authProvider.userRole != null) {
+      _navigateToRoleBasedHome(authProvider.userRole!);
+    } else {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+    }
   }
 
   void _navigateToRoleBasedHome(UserRole role) {

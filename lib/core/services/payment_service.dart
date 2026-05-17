@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PaymentService {
@@ -17,7 +18,7 @@ class PaymentService {
         throw 'Could not launch UPI apps. Please install GPay, PhonePe or any UPI app.';
       }
     } catch (e) {
-      print("Payment Error: $e");
+      debugPrint('Payment Error: $e');
       rethrow;
     }
   }

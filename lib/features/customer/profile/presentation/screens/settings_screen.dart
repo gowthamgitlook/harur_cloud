@@ -34,7 +34,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: Switch(
                   value: themeProvider.isDarkMode,
                   onChanged: (v) => themeProvider.toggleTheme(),
-                  activeColor: ZomatoTheme.primaryRed,
+                  activeThumbColor: ZomatoTheme.primaryRed,
                 ),
               ),
               
@@ -46,7 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: Switch(
                   value: _notificationsEnabled,
                   onChanged: (v) => setState(() => _notificationsEnabled = v),
-                  activeColor: ZomatoTheme.primaryRed,
+                  activeThumbColor: ZomatoTheme.primaryRed,
                 ),
               ),
 

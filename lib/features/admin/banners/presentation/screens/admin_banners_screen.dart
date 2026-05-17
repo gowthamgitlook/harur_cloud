@@ -35,7 +35,7 @@ class _AdminBannersScreenState extends State<AdminBannersScreen> {
         children: [
           Text('Active Banners', style: ZomatoTheme.bodyLarge),
           const SizedBox(height: 16),
-          ...banners.map((url) => _buildBannerCard(url, menuProvider)).toList(),
+          ...banners.map((url) => _buildBannerCard(url, menuProvider)),
           const SizedBox(height: 24),
           _buildAddBannerForm(menuProvider),
         ],
@@ -60,7 +60,7 @@ class _AdminBannersScreenState extends State<AdminBannersScreen> {
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(height: 120, color: Colors.grey[200]),
+              errorBuilder: (_, _, _) => Container(height: 120, color: Colors.grey[200]),
             ),
           ),
           Padding(

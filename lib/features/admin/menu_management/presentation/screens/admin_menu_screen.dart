@@ -340,7 +340,7 @@ class _MenuItemCard extends StatelessWidget {
                         );
                       }
                     },
-                    activeColor: GlassTheme.successGreen,
+                    activeThumbColor: GlassTheme.successGreen,
                   ),
                   Text(
                     item.isAvailable ? 'LIVE' : 'OUT',

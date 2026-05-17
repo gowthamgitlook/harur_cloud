@@ -49,8 +49,9 @@ class AdminOrderProvider with ChangeNotifier {
     notifyListeners();
     try {
       if (AppConfig.useMockServices) {
-        _allOrders = await _mock!.getAllOrders();
-        _dashboardStats = _mock!.getDashboardStats();
+        final mock = _mock;
+        _allOrders = await mock!.getAllOrders();
+        _dashboardStats = mock.getDashboardStats();
       } else {
         _allOrders = await _firestore!.getAllOrders();
         _dashboardStats = _computeStats(_allOrders);

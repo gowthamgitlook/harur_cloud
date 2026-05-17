@@ -157,11 +157,10 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
                   // Call callback with scanned data
                   widget.onScanComplete(code);
 
-                  // Close scanner after 500ms
+                  // Close scanner after 500ms — capture navigator before async gap
+                  final navigator = Navigator.of(context);
                   Future.delayed(const Duration(milliseconds: 500), () {
-                    if (mounted) {
-                      Navigator.of(context).pop(code);
-                    }
+                    if (mounted) navigator.pop(code);
                   });
                 }
               }

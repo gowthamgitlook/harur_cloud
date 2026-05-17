@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../config/app_config.dart';
 import '../../../../shared/enums/user_role.dart';
@@ -17,7 +18,7 @@ class MockAuthService implements IAuthService {
     // For mock, allow login with any valid-looking email and password
     if (email.contains('@') && password.length >= 6) {
       // Check if user exists in mock users
-      UserModel? user;
+      UserModel user;
       try {
         user = mockUsers.firstWhere((u) => u.email == email);
       } catch (e) {
@@ -30,7 +31,7 @@ class MockAuthService implements IAuthService {
           role: UserRole.customer,
         );
       }
-      await saveUser(user!);
+      await saveUser(user);
       return user;
     } else {
       throw Exception('Invalid email or password. Password must be at least 6 characters.');
@@ -110,7 +111,7 @@ class MockAuthService implements IAuthService {
     );
 
     // In mock mode, always return true
-    print('Mock OTP sent to ${user.phone}: ${AppConfig.mockOTP}');
+    debugPrint('Mock OTP sent to ${user.phone}: ${AppConfig.mockOTP}');
     return true;
   }
 

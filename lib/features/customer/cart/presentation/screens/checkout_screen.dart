@@ -103,90 +103,82 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                     )
                   else
-                    ...user.addresses.map((address) {
-                      final isSelected = _selectedAddress?.id == address.id;
-                      return Card(
-                        color: isSelected
-                            ? AppColors.primaryRed.withValues(alpha: 0.1)
-                            : null,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedAddress = address;
-                            });
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.all(AppSizes.paddingMD),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Radio<String>(
-                                  value: address.id,
-                                  groupValue: _selectedAddress?.id,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedAddress = address;
-                                    });
-                                  },
-                                  activeColor: AppColors.primaryRed,
-                                ),
-                                SizedBox(width: AppSizes.spacingSM),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
+                    RadioGroup<String>(
+                      groupValue: _selectedAddress?.id,
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedAddress = user.addresses.firstWhere((a) => a.id == val);
+                          });
+                        }
+                      },
+                      child: Column(
+                        children: user.addresses.map((address) {
+                          final isSelected = _selectedAddress?.id == address.id;
+                          return Card(
+                            color: isSelected
+                                ? AppColors.primaryRed.withValues(alpha: 0.1)
+                                : null,
+                            child: InkWell(
+                              onTap: () => setState(() => _selectedAddress = address),
+                              child: Padding(
+                                padding: EdgeInsets.all(AppSizes.paddingMD),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Radio<String>(
+                                      value: address.id,
+                                      fillColor: WidgetStateProperty.resolveWith((states) {
+                                        if (states.contains(WidgetState.selected)) return AppColors.primaryRed;
+                                        return null;
+                                      }),
+                                    ),
+                                    SizedBox(width: AppSizes.spacingSM),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: AppSizes.paddingSM,
-                                              vertical: AppSizes.paddingXS,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.primaryRed,
-                                              borderRadius: BorderRadius.circular(
-                                                AppSizes.radiusXS,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              address.label,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.copyWith(
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: AppSizes.paddingSM,
+                                                  vertical: AppSizes.paddingXS,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primaryRed,
+                                                  borderRadius: BorderRadius.circular(AppSizes.radiusXS),
+                                                ),
+                                                child: Text(
+                                                  address.label,
+                                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                                     color: AppColors.textLight,
                                                     fontWeight: FontWeight.w600,
                                                   ),
-                                            ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
+                                          SizedBox(height: AppSizes.spacingSM),
+                                          Text(address.fullAddress, style: Theme.of(context).textTheme.bodyMedium),
+                                          if (address.landmark != null) ...[
+                                            SizedBox(height: AppSizes.spacingXS),
+                                            Text(
+                                              'Landmark: ${address.landmark}',
+                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+                                            ),
+                                          ],
                                         ],
                                       ),
-                                      SizedBox(height: AppSizes.spacingSM),
-                                      Text(
-                                        address.fullAddress,
-                                        style: Theme.of(context).textTheme.bodyMedium,
-                                      ),
-                                      if (address.landmark != null) ...[
-                                        SizedBox(height: AppSizes.spacingXS),
-                                        Text(
-                                          'Landmark: ${address.landmark}',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                color: AppColors.textSecondary,
-                                              ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
-                      );
-                    }),
+                          );
+                        }).toList(),
+                      ),
+                    ),
 
                   SizedBox(height: AppSizes.spacingLG),
 
@@ -197,54 +189,49 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                   SizedBox(height: AppSizes.spacingSM),
 
-                  ...PaymentMethod.values.map((method) {
-                    final isSelected = _selectedPaymentMethod == method;
-                    return Card(
-                      color: isSelected
-                          ? AppColors.primaryRed.withValues(alpha: 0.1)
-                          : null,
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            _selectedPaymentMethod = method;
-                          });
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.all(AppSizes.paddingMD),
-                          child: Row(
-                            children: [
-                              Radio<PaymentMethod>(
-                                value: method,
-                                groupValue: _selectedPaymentMethod,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedPaymentMethod = value!;
-                                  });
-                                },
-                                activeColor: AppColors.primaryRed,
-                              ),
-                              Icon(
-                                method.icon,
-                                size: AppSizes.iconMD,
-                                color: isSelected
-                                    ? AppColors.primaryRed
-                                    : AppColors.textSecondary,
-                              ),
-                              SizedBox(width: AppSizes.spacingMD),
-                              Text(
-                                method.displayName,
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.normal,
+                  RadioGroup<PaymentMethod>(
+                    groupValue: _selectedPaymentMethod,
+                    onChanged: (val) {
+                      if (val != null) setState(() => _selectedPaymentMethod = val);
+                    },
+                    child: Column(
+                      children: PaymentMethod.values.map((method) {
+                        final isSelected = _selectedPaymentMethod == method;
+                        return Card(
+                          color: isSelected ? AppColors.primaryRed.withValues(alpha: 0.1) : null,
+                          child: InkWell(
+                            onTap: () => setState(() => _selectedPaymentMethod = method),
+                            child: Padding(
+                              padding: EdgeInsets.all(AppSizes.paddingMD),
+                              child: Row(
+                                children: [
+                                  Radio<PaymentMethod>(
+                                    value: method,
+                                    fillColor: WidgetStateProperty.resolveWith((states) {
+                                      if (states.contains(WidgetState.selected)) return AppColors.primaryRed;
+                                      return null;
+                                    }),
+                                  ),
+                                  Icon(
+                                    method.icon,
+                                    size: AppSizes.iconMD,
+                                    color: isSelected ? AppColors.primaryRed : AppColors.textSecondary,
+                                  ),
+                                  SizedBox(width: AppSizes.spacingMD),
+                                  Text(
+                                    method.displayName,
+                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                                     ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  }),
+                        );
+                      }).toList(),
+                    ),
+                  ),
 
                   SizedBox(height: AppSizes.spacingLG),
 

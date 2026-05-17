@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../../config/app_config.dart';
 import '../../../../core/theme/glass_theme.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -304,31 +306,32 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   ),
                 ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1, end: 0),
                 
-                SizedBox(height: AppSizes.spacingLG),
-                // Hint
-                GlassMorphism(
-                  padding: EdgeInsets.all(AppSizes.paddingMD),
-                  opacity: 0.1,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        color: GlassTheme.primaryBlue,
-                        size: AppSizes.iconSM,
-                      ),
-                      SizedBox(width: AppSizes.spacingSM),
-                      Expanded(
-                        child: Text(
-                          'For testing, use OTP: 123456',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: GlassTheme.primaryBlue,
-                                fontWeight: FontWeight.w600,
-                              ),
+                if (AppConfig.useMockServices || kDebugMode) ...[
+                  SizedBox(height: AppSizes.spacingLG),
+                  GlassMorphism(
+                    padding: EdgeInsets.all(AppSizes.paddingMD),
+                    opacity: 0.1,
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          color: GlassTheme.primaryBlue,
+                          size: AppSizes.iconSM,
                         ),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 800.ms),
+                        SizedBox(width: AppSizes.spacingSM),
+                        Expanded(
+                          child: Text(
+                            'Testing mode — use OTP: ${AppConfig.mockOTP}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: GlassTheme.primaryBlue,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ).animate().fadeIn(delay: 800.ms),
+                ],
               ],
             ),
           ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -93,25 +94,31 @@ class FirebaseAuthService implements IAuthService {
 
   @override
   Future<bool> sendOTP(String phoneNumber) async {
+    final completer = Completer<bool>();
     try {
-      bool codeSent = false;
-      await _auth.verifyPhoneNumber(
+      _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
+        timeout: const Duration(seconds: 60),
         verificationCompleted: (PhoneAuthCredential cred) async {
+          // Auto-verified on some Android devices — sign in immediately
           await _auth.signInWithCredential(cred);
+          if (!completer.isCompleted) completer.complete(true);
         },
         verificationFailed: (FirebaseAuthException e) {
-          throw e;
+          if (!completer.isCompleted) {
+            completer.completeError(Exception(e.message ?? 'Phone verification failed'));
+          }
         },
         codeSent: (String verificationId, int? resendToken) {
           _verificationId = verificationId;
-          codeSent = true;
+          if (!completer.isCompleted) completer.complete(true);
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           _verificationId = verificationId;
+          if (!completer.isCompleted) completer.complete(false);
         },
       );
-      return codeSent;
+      return await completer.future;
     } catch (_) {
       return false;
     }

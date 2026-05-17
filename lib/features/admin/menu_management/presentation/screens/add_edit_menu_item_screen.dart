@@ -192,7 +192,7 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: DropdownButtonFormField<FoodCategory>(
-                              value: _selectedCategory,
+                              initialValue: _selectedCategory,
                               decoration: const InputDecoration(labelText: 'Category'),
                               items: FoodCategory.values
                                   .map((c) => DropdownMenuItem(value: c, child: Text(c.displayName)))
@@ -330,7 +330,7 @@ class _AddEditMenuItemScreenState extends State<AddEditMenuItemScreen> {
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
       value: value,
-      activeColor: activeColor,
+      activeThumbColor: activeColor,
       onChanged: onChanged,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
     );
