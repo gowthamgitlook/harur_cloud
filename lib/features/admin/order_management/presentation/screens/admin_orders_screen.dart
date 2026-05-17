@@ -4,9 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../shared/enums/order_status.dart';
-import '../../../../../shared/enums/user_role.dart';
 import '../../../../../shared/models/order_model.dart';
-import '../../../../auth/data/services/mock_auth_service.dart';
 import '../../providers/admin_order_provider.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
@@ -331,10 +329,7 @@ class _AdminOrderCard extends StatelessWidget {
   }
 
   void _showAssignDeliveryDialog(BuildContext context, OrderModel order) {
-    // Get delivery partners from MockAuthService
-    final deliveryPartners = MockAuthService.mockUsers
-        .where((user) => user.role == UserRole.delivery)
-        .toList();
+    final deliveryPartners = context.read<AdminOrderProvider>().deliveryPartners;
 
     showDialog(
       context: context,

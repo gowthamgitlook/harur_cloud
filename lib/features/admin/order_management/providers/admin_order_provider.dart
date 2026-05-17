@@ -1,16 +1,21 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../../shared/enums/order_status.dart';
+import '../../../../shared/enums/user_role.dart';
 import '../../../../shared/models/order_model.dart';
+import '../../../../shared/models/user_model.dart';
 import '../../../../config/app_config.dart';
 import '../../../customer/orders/data/services/mock_order_service.dart';
+import '../../../auth/data/services/mock_auth_service.dart';
 import '../../../../data/services/firestore_order_service.dart';
+import '../../../../data/services/firestore_user_service.dart';
 
 class AdminOrderProvider with ChangeNotifier {
   late final MockOrderService? _mock;
   late final FirestoreOrderService? _firestore;
 
   List<OrderModel> _allOrders = [];
+  List<UserModel> _deliveryPartners = [];
   OrderStatus? _statusFilter;
   bool _isLoading = false;
   String? _error;
@@ -18,6 +23,7 @@ class AdminOrderProvider with ChangeNotifier {
   Map<String, dynamic> _dashboardStats = {};
 
   List<OrderModel> get allOrders => _allOrders;
+  List<UserModel> get deliveryPartners => _deliveryPartners;
   bool get isLoading => _isLoading;
   String? get error => _error;
   OrderStatus? get statusFilter => _statusFilter;
@@ -52,9 +58,14 @@ class AdminOrderProvider with ChangeNotifier {
         final mock = _mock;
         _allOrders = await mock!.getAllOrders();
         _dashboardStats = mock.getDashboardStats();
+        _deliveryPartners = MockAuthService.mockUsers
+            .where((u) => u.role == UserRole.delivery)
+            .toList();
       } else {
         _allOrders = await _firestore!.getAllOrders();
         _dashboardStats = _computeStats(_allOrders);
+        _deliveryPartners = await FirestoreUserService()
+            .getUsersByRole(UserRole.delivery);
       }
     } catch (e) {
       _error = e.toString();
