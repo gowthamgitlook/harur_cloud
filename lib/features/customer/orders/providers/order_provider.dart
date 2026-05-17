@@ -5,10 +5,13 @@ import '../../../../shared/models/cart_item_model.dart';
 import '../../../../shared/models/address_model.dart';
 import '../../../../shared/enums/order_status.dart';
 import '../../../../shared/enums/payment_method.dart';
+import '../../../../config/app_config.dart';
 import '../data/services/mock_order_service.dart';
+import '../../../../data/services/firestore_order_service.dart';
 
 class OrderProvider with ChangeNotifier {
-  final MockOrderService _orderService = MockOrderService();
+  late final MockOrderService? _mockService;
+  late final FirestoreOrderService? _firestoreService;
 
   List<OrderModel> _orders = [];
   List<OrderModel> _activeOrders = [];
@@ -26,24 +29,31 @@ class OrderProvider with ChangeNotifier {
   bool get hasOrderHistory => _orderHistory.isNotEmpty;
 
   OrderProvider() {
-    _safeInitialize();
+    if (AppConfig.useMockServices) {
+      _mockService = MockOrderService();
+      _firestoreService = null;
+      _subscribeToMockStream();
+    } else {
+      _mockService = null;
+      _firestoreService = FirestoreOrderService();
+    }
   }
 
-  void _safeInitialize() {
+  void _subscribeToMockStream() {
     try {
-      _orderSubscription = _orderService.ordersStream.listen(
-        (updatedOrders) {
-          _orders = updatedOrders;
+      _orderSubscription = _mockService!.ordersStream.listen(
+        (updated) {
+          _orders = updated;
           _categorizeOrders();
           notifyListeners();
         },
         onError: (err) {
-          _error = 'Order update stream error: $err';
+          _error = 'Order stream error: $err';
           notifyListeners();
-        }
+        },
       );
     } catch (e) {
-      debugPrint('OrderProvider setup failed: $e');
+      debugPrint('OrderProvider stream setup failed: $e');
     }
   }
 
@@ -51,9 +61,12 @@ class OrderProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
-      _orders = await _orderService.getUserOrders(userId);
+      if (AppConfig.useMockServices) {
+        _orders = await _mockService!.getUserOrders(userId);
+      } else {
+        _orders = await _firestoreService!.getUserOrders(userId);
+      }
       _categorizeOrders();
     } catch (e) {
       _error = 'Failed to load orders: $e';
@@ -79,20 +92,37 @@ class OrderProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
-      final order = await _orderService.createOrder(
-        userId: userId,
-        items: items,
-        subtotal: subtotal,
-        deliveryFee: deliveryFee,
-        tax: tax,
-        discount: discount,
-        totalPrice: totalPrice,
-        paymentMethod: paymentMethod,
-        deliveryAddress: deliveryAddress,
-        promoCode: promoCode,
-      );
+      final OrderModel order;
+      if (AppConfig.useMockServices) {
+        order = await _mockService!.createOrder(
+          userId: userId,
+          items: items,
+          subtotal: subtotal,
+          deliveryFee: deliveryFee,
+          tax: tax,
+          discount: discount,
+          totalPrice: totalPrice,
+          paymentMethod: paymentMethod,
+          deliveryAddress: deliveryAddress,
+          promoCode: promoCode,
+        );
+      } else {
+        order = await _firestoreService!.createOrder(
+          userId: userId,
+          items: items,
+          subtotal: subtotal,
+          deliveryFee: deliveryFee,
+          tax: tax,
+          discount: discount,
+          totalPrice: totalPrice,
+          paymentMethod: paymentMethod,
+          deliveryAddress: deliveryAddress,
+          promoCode: promoCode,
+        );
+        _orders.insert(0, order);
+        _categorizeOrders();
+      }
       _isLoading = false;
       notifyListeners();
       return order;
@@ -106,7 +136,10 @@ class OrderProvider with ChangeNotifier {
 
   Future<OrderModel?> getOrderById(String orderId) async {
     try {
-      return await _orderService.getOrderById(orderId);
+      if (AppConfig.useMockServices) {
+        return await _mockService!.getOrderById(orderId);
+      }
+      return await _firestoreService!.getOrderById(orderId);
     } catch (e) {
       _error = 'Failed to load order: $e';
       return null;
@@ -115,7 +148,22 @@ class OrderProvider with ChangeNotifier {
 
   Future<bool> cancelOrder(String orderId) async {
     try {
-      return await _orderService.cancelOrder(orderId);
+      final bool result;
+      if (AppConfig.useMockServices) {
+        result = await _mockService!.cancelOrder(orderId);
+      } else {
+        result = await _firestoreService!.cancelOrder(orderId);
+        if (result) {
+          final idx = _orders.indexWhere((o) => o.id == orderId);
+          if (idx != -1) {
+            _orders[idx] = _orders[idx].copyWith(
+                status: OrderStatus.cancelled, updatedAt: DateTime.now());
+            _categorizeOrders();
+            notifyListeners();
+          }
+        }
+      }
+      return result;
     } catch (e) {
       _error = 'Failed to cancel order: $e';
       return false;
@@ -126,9 +174,15 @@ class OrderProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
-      final order = await _orderService.reorder(previousOrder);
+      final OrderModel order;
+      if (AppConfig.useMockServices) {
+        order = await _mockService!.reorder(previousOrder);
+      } else {
+        order = await _firestoreService!.reorder(previousOrder);
+        _orders.insert(0, order);
+        _categorizeOrders();
+      }
       _isLoading = false;
       notifyListeners();
       return order;
@@ -142,47 +196,58 @@ class OrderProvider with ChangeNotifier {
 
   Future<Map<String, double>> getDeliveryPartnerLocation(String orderId) async {
     try {
-      return await _orderService.getDeliveryPartnerLocation(orderId);
-    } catch (e) {
-      return {'latitude': 12.0540, 'longitude': 78.4822};
+      if (AppConfig.useMockServices) {
+        return await _mockService!.getDeliveryPartnerLocation(orderId);
+      }
+      return await _firestoreService!.getDeliveryPartnerLocation(orderId);
+    } catch (_) {
+      return {'latitude': AppConfig.harurLatitude, 'longitude': AppConfig.harurLongitude};
     }
   }
 
   Map<OrderStatus, int> getOrderStats(String userId) {
-    return _orderService.getOrderStats(userId);
+    if (AppConfig.useMockServices) {
+      return _mockService!.getOrderStats(userId);
+    }
+    final stats = <OrderStatus, int>{};
+    for (final status in OrderStatus.values) {
+      stats[status] = _orders.where((o) => o.userId == userId && o.status == status).length;
+    }
+    return stats;
   }
 
   void _categorizeOrders() {
-    _activeOrders = _orders.where((order) =>
-      order.status != OrderStatus.delivered &&
-      order.status != OrderStatus.cancelled
-    ).toList();
-
-    _orderHistory = _orders.where((order) =>
-      order.status == OrderStatus.delivered ||
-      order.status == OrderStatus.cancelled
-    ).toList();
+    _activeOrders = _orders
+        .where((o) =>
+            o.status != OrderStatus.delivered &&
+            o.status != OrderStatus.cancelled)
+        .toList();
+    _orderHistory = _orders
+        .where((o) =>
+            o.status == OrderStatus.delivered ||
+            o.status == OrderStatus.cancelled)
+        .toList();
   }
 
   double getTotalSpent() {
     return _orders
-        .where((order) => order.status == OrderStatus.delivered)
-        .fold(0.0, (sum, order) => sum + order.totalPrice);
+        .where((o) => o.status == OrderStatus.delivered)
+        .fold(0.0, (sum, o) => sum + o.totalPrice);
   }
 
   List<String> getMostOrderedItems({int limit = 5}) {
-    final itemCounts = <String, int>{};
-    for (var order in _orders) {
-      if (order.status == OrderStatus.delivered) {
-        for (var item in order.items) {
-          final itemName = item.menuItem.name;
-          itemCounts[itemName] = (itemCounts[itemName] ?? 0) + item.quantity;
+    final counts = <String, int>{};
+    for (final o in _orders) {
+      if (o.status == OrderStatus.delivered) {
+        for (final item in o.items) {
+          counts[item.menuItem.name] = (counts[item.menuItem.name] ?? 0) + item.quantity;
         }
       }
     }
-    final sortedItems = itemCounts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    return sortedItems.take(limit).map((e) => e.key).toList();
+    return (counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
+        .take(limit)
+        .map((e) => e.key)
+        .toList();
   }
 
   @override

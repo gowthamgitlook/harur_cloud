@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/glass_theme.dart';
 import '../../../../../shared/enums/food_category.dart';
 import '../../../../../shared/models/menu_item_model.dart';

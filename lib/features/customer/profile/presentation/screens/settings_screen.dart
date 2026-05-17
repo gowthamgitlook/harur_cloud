@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../../core/constants/app_colors.dart';
-import '../../../../../core/constants/app_sizes.dart';
-import '../../../../../core/constants/app_strings.dart';
-import '../../../../../core/theme/theme_provider.dart';
-import '../../../../../core/utils/permissions_handler.dart';
-import 'support_screen.dart';
-import 'feedback_screen.dart';
+import 'package:harur_cloud_kitchen/core/theme/zomato_theme.dart';
+import 'package:harur_cloud_kitchen/core/theme/theme_provider.dart';
+import 'package:harur_cloud_kitchen/core/constants/app_routes.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -21,84 +17,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.settings)),
+      backgroundColor: ZomatoTheme.background,
+      appBar: AppBar(
+        title: const Text('Settings'),
+        backgroundColor: Colors.white,
+      ),
       body: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return ListView(
             children: [
-              _buildSectionHeader('Support & Feedback'),
+              _buildSectionHeader('Appearance'),
               _buildSettingTile(
-                context,
-                icon: Icons.help_outline,
-                title: 'Help & Support',
-                subtitle: 'FAQs, Chat and Call support',
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SupportScreen())),
-              ),
-              _buildSettingTile(
-                context,
-                icon: Icons.feedback_outlined,
-                title: 'Send Feedback',
-                subtitle: 'Tell us how we can improve',
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FeedbackScreen())),
-              ),
-
-              _buildSectionHeader('App Settings'),
-              _buildSettingTile(
-                context,
-                icon: Icons.dark_mode_outlined,
-                title: 'Dark Mode',
-                subtitle: 'Toggle app theme',
+                Icons.dark_mode_outlined,
+                'Dark Mode',
+                'Switch between light and dark theme',
                 trailing: Switch(
                   value: themeProvider.isDarkMode,
                   onChanged: (v) => themeProvider.toggleTheme(),
-                  activeColor: AppColors.primaryRed,
+                  activeColor: ZomatoTheme.primaryRed,
                 ),
               ),
+              
+              _buildSectionHeader('Notifications'),
               _buildSettingTile(
-                context,
-                icon: Icons.notifications_none,
-                title: 'Notifications',
-                subtitle: 'Manage app alerts',
+                Icons.notifications_none_outlined,
+                'Order Updates',
+                'Get real-time tracking alerts',
                 trailing: Switch(
                   value: _notificationsEnabled,
                   onChanged: (v) => setState(() => _notificationsEnabled = v),
-                  activeColor: AppColors.primaryRed,
+                  activeColor: ZomatoTheme.primaryRed,
                 ),
               ),
 
-              _buildSectionHeader('Permissions'),
-              _buildSettingTile(
-                context,
-                icon: Icons.location_on_outlined,
-                title: 'Location Access',
-                subtitle: 'Manage location permissions',
-                onTap: () => PermissionsHandler.openAppSettings(),
-              ),
-              _buildSettingTile(
-                context,
-                icon: Icons.camera_alt_outlined,
-                title: 'Camera Access',
-                subtitle: 'Used for QR and profile photos',
-                onTap: () => PermissionsHandler.openAppSettings(),
-              ),
+              _buildSectionHeader('Account & Privacy'),
+              _buildSettingTile(Icons.location_on_outlined, 'Manage Addresses', 'Your delivery locations', 
+                onTap: () => Navigator.pushNamed(context, AppRoutes.manageAddresses)),
+              _buildSettingTile(Icons.security_outlined, 'Privacy Settings', 'Control your account visibility', onTap: () {}),
 
-              _buildSectionHeader('More'),
-              _buildSettingTile(
-                context,
-                icon: Icons.info_outline,
-                title: 'About App',
-                subtitle: 'Version 1.0.0 (Staging)',
-                onTap: () {
-                  showAboutDialog(
-                    context: context,
-                    applicationName: AppStrings.appName,
-                    applicationVersion: '1.0.0',
-                    applicationIcon: const Icon(Icons.restaurant_menu, color: AppColors.primaryRed, size: 40),
-                  );
-                },
-              ),
-              
+              _buildSectionHeader('Help & Support'),
+              _buildSettingTile(Icons.help_outline, 'Help Center', 'FAQs and troubleshooting', 
+                onTap: () => Navigator.pushNamed(context, AppRoutes.support)),
+              _buildSettingTile(Icons.chat_bubble_outline, 'Customer Support', 'Chat with our team', 
+                onTap: () => Navigator.pushNamed(context, AppRoutes.support)),
+
               const SizedBox(height: 40),
+              Center(
+                child: Text('Harur Cloud v1.7.0', style: TextStyle(color: ZomatoTheme.textTertiary, fontSize: 12)),
+              ),
+              const SizedBox(height: 20),
             ],
           );
         },
@@ -111,22 +78,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2),
+        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2),
       ),
     );
   }
 
-  Widget _buildSettingTile(BuildContext context, {required IconData icon, required String title, required String subtitle, Widget? trailing, VoidCallback? onTap}) {
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: AppColors.primaryRed.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, color: AppColors.primaryRed, size: 22),
+  Widget _buildSettingTile(IconData icon, String title, String subtitle, {Widget? trailing, VoidCallback? onTap}) {
+    return Container(
+      color: Colors.white,
+      child: ListTile(
+        onTap: onTap,
+        leading: Icon(icon, color: Colors.black87),
+        title: Text(title, style: ZomatoTheme.bodyLarge.copyWith(fontSize: 15)),
+        subtitle: Text(subtitle, style: ZomatoTheme.bodyMedium.copyWith(fontSize: 12)),
+        trailing: trailing ?? const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-      trailing: trailing ?? const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
     );
   }
 }

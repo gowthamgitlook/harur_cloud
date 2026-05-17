@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_sizes.dart';
-import '../../core/theme/glass_theme.dart';
+import '../../core/theme/zomato_theme.dart';
 import '../models/restaurant_model.dart';
 
 class RestaurantCard extends StatelessWidget {
@@ -19,122 +16,134 @@ class RestaurantCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: GlassMorphism(
-        blur: 15,
-        opacity: 0.1,
-        margin: EdgeInsets.only(bottom: AppSizes.paddingMD),
-        padding: EdgeInsets.zero,
-        borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: ZomatoTheme.cardShadow,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Section
+            // Image Stack
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(AppSizes.radiusLG),
-                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   child: Image.network(
                     restaurant.imageUrl,
-                    height: 180,
+                    height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 180,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            GlassTheme.primaryBlue.withValues(alpha: 0.1),
-                            GlassTheme.secondaryBlue.withValues(alpha: 0.1),
-                          ],
-                        ),
-                      ),
-                      child: const Icon(Icons.restaurant, size: 50, color: GlassTheme.primaryBlue),
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 200,
+                      color: const Color(0xFFF0F0F0),
+                      child: const Icon(Icons.restaurant, color: Color(0xFFCCCCCC), size: 40),
                     ),
                   ),
                 ),
-                // Discount/Offer Overlay (Simulated)
+                // Premium Badges
                 Positioned(
-                  bottom: 10,
-                  left: 0,
+                  top: 12,
+                  left: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      gradient: GlassTheme.buttonGradient,
-                      borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(4),
-                        bottomRight: Radius.circular(4),
-                      ),
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(
-                      '₹125 OFF',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+                      'Promoted',
+                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
                 // Rating Overlay
                 Positioned(
-                  bottom: 10,
-                  right: 10,
-                  child: GlassMorphism(
-                    blur: 10,
-                    opacity: 0.2,
+                  bottom: 12,
+                  right: 12,
+                  child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    borderRadius: BorderRadius.circular(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4),
+                      ],
+                    ),
                     child: Row(
                       children: [
                         Text(
                           restaurant.rating.toString(),
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: GlassTheme.textPrimary),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                         ),
-                        const Icon(Icons.star, color: GlassTheme.warningYellow, size: 16),
-                        Text(
-                          ' (${restaurant.reviewCount}+)',
-                          style: const TextStyle(fontSize: 10, color: GlassTheme.textSecondary),
-                        ),
+                        const SizedBox(width: 2),
+                        const Icon(Icons.star, color: Colors.green, size: 14),
                       ],
+                    ),
+                  ),
+                ),
+                // Time Overlay
+                Positioned(
+                  bottom: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4),
+                      ],
+                    ),
+                    child: Text(
+                      restaurant.deliveryTime,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                   ),
                 ),
               ],
             ),
-            // Info Section
+            // Content
             Padding(
-              padding: EdgeInsets.all(AppSizes.paddingMD),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        restaurant.name,
-                        style: GlassTheme.headlineLarge.copyWith(fontSize: 18),
+                      Expanded(
+                        child: Text(
+                          restaurant.name,
+                          style: ZomatoTheme.bodyLarge.copyWith(fontSize: 18, color: ZomatoTheme.textPrimary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       Text(
-                        restaurant.deliveryTime,
-                        style: GlassTheme.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                        '₹${restaurant.priceForTwo.toInt()} for two',
+                        style: ZomatoTheme.bodyMedium.copyWith(fontSize: 12, color: ZomatoTheme.textPrimary, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     restaurant.cuisine,
-                    style: GlassTheme.bodyMedium,
+                    style: ZomatoTheme.bodyMedium.copyWith(color: ZomatoTheme.textSecondary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1, color: Color(0xFFF0F0F0)),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(Icons.timer_outlined, size: 16, color: GlassTheme.primaryBlue),
+                      const Icon(Icons.trending_up, color: Colors.blue, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        '${restaurant.deliveryTime} • ₹${restaurant.priceForTwo.toInt()} for two',
-                        style: GlassTheme.bodyMedium.copyWith(color: GlassTheme.textSecondary),
+                        '${restaurant.reviewCount}+ orders placed recently',
+                        style: ZomatoTheme.bodyMedium.copyWith(fontSize: 11, color: Colors.blue, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -144,9 +153,6 @@ class RestaurantCard extends StatelessWidget {
           ],
         ),
       ),
-    ).animate().scale(
-      begin: const Offset(1, 1),
-      end: const Offset(1.02, 1.02),
-    ).then().scale(begin: const Offset(1.02, 1.02), end: const Offset(1, 1));
+    );
   }
 }

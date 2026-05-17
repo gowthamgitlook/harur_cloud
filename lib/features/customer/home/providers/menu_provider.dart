@@ -16,10 +16,11 @@ class MenuProvider extends ChangeNotifier {
   List<String> _banners = [];
   FoodCategory? _selectedCategory;
   String _searchQuery = '';
-  
+  bool _vegOnly = false;
+
   // UI State
   bool _isLoading = false;
-  bool _isSearchLoading = false; // New: For debounce UX
+  bool _isSearchLoading = false;
   String? _errorMessage;
   Timer? _searchDebounce;
 
@@ -34,6 +35,7 @@ class MenuProvider extends ChangeNotifier {
   List<String> get banners => _banners;
   FoodCategory? get selectedCategory => _selectedCategory;
   String get searchQuery => _searchQuery;
+  bool get vegOnly => _vegOnly;
   bool get isLoading => _isLoading;
   bool get isSearchLoading => _isSearchLoading;
   String? get errorMessage => _errorMessage;
@@ -45,7 +47,6 @@ class MenuProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Parallel execution for faster start (Senior approach)
       final results = await Future.wait([
         _menuRepository.getMenuItems(),
         _menuRepository.getBanners(),
@@ -53,7 +54,7 @@ class MenuProvider extends ChangeNotifier {
       ]);
 
       _allItems = results[0] as List<MenuItemModel>;
-      _banners = results[1] as List<String>;
+      _banners = List<String>.from(results[1] as List<String>);
       _allRestaurants = results[2] as List<RestaurantModel>;
 
       _applyFilters();
@@ -66,9 +67,25 @@ class MenuProvider extends ChangeNotifier {
     }
   }
 
+  void addBanner(String url) {
+    _banners.add(url);
+    notifyListeners();
+  }
+
+  void removeBanner(String url) {
+    _banners.remove(url);
+    notifyListeners();
+  }
+
   /// Category Filter
   void filterByCategory(FoodCategory? category) {
     _selectedCategory = category;
+    _applyFilters();
+  }
+
+  /// Veg Only Toggle
+  void toggleVegOnly() {
+    _vegOnly = !_vegOnly;
     _applyFilters();
   }
 
@@ -105,6 +122,11 @@ class MenuProvider extends ChangeNotifier {
       items = items.where((item) => item.category == _selectedCategory);
     }
 
+    // Filter veg only
+    if (_vegOnly) {
+      items = items.where((item) => item.isVeg);
+    }
+
     // Filter by search
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
@@ -128,6 +150,7 @@ class MenuProvider extends ChangeNotifier {
   void clearFilters() {
     _selectedCategory = null;
     _searchQuery = '';
+    _vegOnly = false;
     _applyFilters();
   }
 

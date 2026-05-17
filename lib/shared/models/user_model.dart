@@ -8,6 +8,7 @@ class UserModel {
   final String? email;
   final UserRole role;
   final List<AddressModel> addresses;
+  final List<String> favoriteItemIds;
   final String? profileImageUrl;
   final DateTime createdAt;
 
@@ -18,6 +19,7 @@ class UserModel {
     this.email,
     required this.role,
     this.addresses = const [],
+    this.favoriteItemIds = const [],
     this.profileImageUrl,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
@@ -32,6 +34,10 @@ class UserModel {
       role: UserRole.fromString(json['role'] as String),
       addresses: (json['addresses'] as List<dynamic>?)
               ?.map((addr) => AddressModel.fromJson(addr as Map<String, dynamic>))
+              .toList() ??
+          [],
+      favoriteItemIds: (json['favoriteItemIds'] as List<dynamic>?)
+              ?.map((id) => id as String)
               .toList() ??
           [],
       profileImageUrl: json['profileImageUrl'] as String?,
@@ -50,6 +56,7 @@ class UserModel {
       'email': email,
       'role': role.name,
       'addresses': addresses.map((addr) => addr.toJson()).toList(),
+      'favoriteItemIds': favoriteItemIds,
       'profileImageUrl': profileImageUrl,
       'createdAt': createdAt.toIso8601String(),
     };
@@ -63,6 +70,7 @@ class UserModel {
     String? email,
     UserRole? role,
     List<AddressModel>? addresses,
+    List<String>? favoriteItemIds,
     String? profileImageUrl,
     DateTime? createdAt,
   }) {
@@ -73,6 +81,7 @@ class UserModel {
       email: email ?? this.email,
       role: role ?? this.role,
       addresses: addresses ?? this.addresses,
+      favoriteItemIds: favoriteItemIds ?? this.favoriteItemIds,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       createdAt: createdAt ?? this.createdAt,
     );

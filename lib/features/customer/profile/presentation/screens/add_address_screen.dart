@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../../config/app_config.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
+import '../../../../../shared/models/address_model.dart';
 import '../../../../../shared/widgets/custom_button.dart';
 import '../../../../../shared/widgets/custom_text_field.dart';
+import '../../../../auth/providers/auth_provider.dart';
 
 class AddAddressScreen extends StatefulWidget {
   const AddAddressScreen({super.key});
@@ -13,28 +17,49 @@ class AddAddressScreen extends StatefulWidget {
 
 class _AddAddressScreenState extends State<AddAddressScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _labelController = TextEditingController();
   final _addressController = TextEditingController();
   final _landmarkController = TextEditingController();
+  String _selectedLabel = 'Home';
   bool _isLoading = false;
+
+  final List<String> _labelOptions = ['Home', 'Work', 'Other'];
 
   @override
   void dispose() {
-    _labelController.dispose();
     _addressController.dispose();
     _landmarkController.dispose();
     super.dispose();
   }
 
-  void _saveAddress() async {
+  Future<void> _saveAddress() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // TODO: Actually save the address using a provider
-      
+
+      final authProvider = context.read<AuthProvider>();
+      final user = authProvider.currentUser;
+
+      if (user == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final newAddress = AddressModel(
+        id: 'addr_${DateTime.now().millisecondsSinceEpoch}',
+        label: _selectedLabel,
+        fullAddress: _addressController.text.trim(),
+        landmark: _landmarkController.text.trim().isEmpty
+            ? null
+            : _landmarkController.text.trim(),
+        latitude: AppConfig.harurLatitude,
+        longitude: AppConfig.harurLongitude,
+      );
+
+      final updatedAddresses = List<AddressModel>.from(user.addresses)
+        ..add(newAddress);
+      authProvider.updateUser(user.copyWith(addresses: updatedAddresses));
+
       if (mounted) {
         setState(() => _isLoading = false);
         Navigator.pop(context);
@@ -68,21 +93,31 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                 ),
                 SizedBox(height: AppSizes.spacingLG),
                 
-                // Label
-                CustomTextField(
-                  controller: _labelController,
-                  label: 'Label (e.g., Home, Office)',
-                  hint: 'Home',
-                  prefixIcon: const Icon(Icons.label),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a label';
-                    }
-                    return null;
-                  },
+                // Address Type
+                Text(
+                  'Address Type',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
-                SizedBox(height: AppSizes.spacingMD),
-                
+                SizedBox(height: AppSizes.spacingSM),
+                Row(
+                  children: _labelOptions.map((label) {
+                    final isSelected = _selectedLabel == label;
+                    return Padding(
+                      padding: EdgeInsets.only(right: AppSizes.spacingSM),
+                      child: ChoiceChip(
+                        label: Text(label),
+                        selected: isSelected,
+                        onSelected: (_) => setState(() => _selectedLabel = label),
+                        selectedColor: AppColors.primaryRed,
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                SizedBox(height: AppSizes.spacingLG),
+
                 // Full Address
                 CustomTextField(
                   controller: _addressController,

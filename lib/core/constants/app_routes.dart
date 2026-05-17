@@ -22,11 +22,15 @@ class AppRoutes {
   static const String settings = '/customer/settings';
   static const String support = '/customer/support';
   static const String feedback = '/customer/feedback';
+  static const String favorites = '/customer/favorites';
+  static const String writeReview = '/customer/write-review';
+  static const String aboutUs = '/customer/about-us';
 
   // Admin
   static const String adminMain = '/admin/main';
   static const String adminOrders = '/admin/orders';
   static const String adminMenu = '/admin/menu';
+  static const String adminBanners = '/admin/banners';
 
   // Delivery
   static const String deliveryMain = '/delivery/main';

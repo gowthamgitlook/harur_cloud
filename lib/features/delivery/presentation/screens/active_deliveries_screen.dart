@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../shared/models/order_model.dart';
+import '../../../../core/services/tracking_service.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../providers/delivery_provider.dart';
 
@@ -23,7 +24,13 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
 
       if (authProvider.currentUser != null) {
         deliveryProvider.setPartnerId(authProvider.currentUser!.id);
-        deliveryProvider.fetchActiveDeliveries();
+        deliveryProvider.fetchActiveDeliveries().then((_) {
+          if (deliveryProvider.activeDeliveries.isNotEmpty) {
+            TrackingService.initializeTracking(
+              deliveryProvider.activeDeliveries.first.id,
+            );
+          }
+        });
       }
     });
   }

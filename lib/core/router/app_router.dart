@@ -11,9 +11,13 @@ import '../../features/customer/orders/presentation/screens/order_tracking_scree
 import '../../features/customer/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/customer/profile/presentation/screens/manage_addresses_screen.dart';
 import '../../features/customer/profile/presentation/screens/settings_screen.dart';
-import '../../features/customer/profile/presentation/screens/support_screen.dart';
 import '../../features/customer/profile/presentation/screens/feedback_screen.dart';
+import '../../features/customer/support/presentation/screens/support_chat_screen.dart';
+import '../../features/customer/favorites/presentation/screens/favorites_screen.dart';
+import '../../features/customer/reviews/presentation/screens/write_review_screen.dart';
+import '../../features/customer/about/presentation/screens/about_us_screen.dart';
 import '../../features/admin/navigation/admin_main_screen.dart';
+import '../../features/admin/banners/presentation/screens/admin_banners_screen.dart';
 import '../../features/delivery/navigation/delivery_main_screen.dart';
 import '../../shared/models/menu_item_model.dart';
 import '../../shared/models/order_model.dart';
@@ -70,14 +74,29 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
 
       case AppRoutes.support:
-        return MaterialPageRoute(builder: (_) => const SupportScreen());
+        return MaterialPageRoute(builder: (_) => const SupportChatScreen());
 
       case AppRoutes.feedback:
         return MaterialPageRoute(builder: (_) => const FeedbackScreen());
 
+      case AppRoutes.favorites:
+        return MaterialPageRoute(builder: (_) => const FavoritesScreen());
+
+      case AppRoutes.aboutUs:
+        return MaterialPageRoute(builder: (_) => const AboutUsScreen());
+
+      case AppRoutes.writeReview:
+        final order = settings.arguments as OrderModel;
+        return MaterialPageRoute(
+          builder: (_) => WriteReviewScreen(order: order),
+        );
+
       // Admin Routes
       case AppRoutes.adminMain:
         return MaterialPageRoute(builder: (_) => const AdminMainScreen());
+      
+      case AppRoutes.adminBanners:
+        return MaterialPageRoute(builder: (_) => const AdminBannersScreen());
 
       // Delivery Routes
       case AppRoutes.deliveryMain:

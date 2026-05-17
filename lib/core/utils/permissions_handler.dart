@@ -86,6 +86,20 @@ class PermissionsHandler {
     }
   }
 
+  /// Launch email
+  static Future<bool> launchEmail(Uri emailUri) async {
+    try {
+      if (await canLaunchUrl(emailUri)) {
+        await launchUrl(emailUri);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error launching email: $e');
+      return false;
+    }
+  }
+
   /// Pick image helper
   static Future<XFile?> showImagePicker(BuildContext context) async {
     return await showModalBottomSheet<XFile?>(

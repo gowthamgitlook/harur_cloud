@@ -2,10 +2,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../shared/enums/order_status.dart';
 import '../../../shared/models/order_model.dart';
+import '../../../config/app_config.dart';
 import '../../customer/orders/data/services/mock_order_service.dart';
+import '../../../data/services/firestore_order_service.dart';
 
 class DeliveryProvider with ChangeNotifier {
-  final MockOrderService _orderService = MockOrderService();
+  late final MockOrderService? _mock;
+  late final FirestoreOrderService? _firestore;
 
   String? _partnerId;
   List<OrderModel> _assignedOrders = [];
@@ -14,11 +17,8 @@ class DeliveryProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   StreamSubscription? _orderSubscription;
-
-  // Delivery stats
   Map<String, dynamic> _deliveryStats = {};
 
-  // Getters
   String? get partnerId => _partnerId;
   List<OrderModel> get assignedOrders => _assignedOrders;
   List<OrderModel> get activeDeliveries => _activeDeliveries;
@@ -27,117 +27,116 @@ class DeliveryProvider with ChangeNotifier {
   String? get error => _error;
   Map<String, dynamic> get deliveryStats => _deliveryStats;
 
-  /// Get total deliveries completed
-  int get totalDeliveriesCompleted {
-    return _deliveryStats['totalDeliveries'] as int? ?? 0;
-  }
-
-  /// Get total earnings
-  double get totalEarnings {
-    return _deliveryStats['totalEarnings'] as double? ?? 0.0;
-  }
-
-  /// Get active deliveries count
-  int get activeDeliveriesCount {
-    return _deliveryStats['activeDeliveries'] as int? ?? 0;
-  }
+  int get totalDeliveriesCompleted =>
+      _deliveryStats['totalDeliveries'] as int? ?? 0;
+  double get totalEarnings =>
+      _deliveryStats['totalEarnings'] as double? ?? 0.0;
+  int get activeDeliveriesCount =>
+      _deliveryStats['activeDeliveries'] as int? ?? 0;
 
   DeliveryProvider() {
-    // Subscribe to order updates
-    _orderSubscription = _orderService.ordersStream.listen((orders) {
-      if (_partnerId != null) {
-        _updateOrderLists();
-      }
-    });
+    if (AppConfig.useMockServices) {
+      final mockInstance = MockOrderService();
+      _mock = mockInstance;
+      _firestore = null;
+      _orderSubscription = mockInstance.ordersStream.listen((_) {
+        if (_partnerId != null) _updateOrderLists();
+      });
+    } else {
+      _mock = null;
+      _firestore = FirestoreOrderService();
+    }
   }
 
-  /// Set the current delivery partner ID
   void setPartnerId(String partnerId) {
     _partnerId = partnerId;
     _updateOrderLists();
     loadDeliveryStats();
   }
 
-  /// Update order lists based on partner ID
   void _updateOrderLists() {
     if (_partnerId == null) return;
-
-    _assignedOrders = _orderService.getOrdersByStatus(OrderStatus.outForDelivery)
-        .where((order) => order.deliveryPartnerId == _partnerId)
-        .toList();
-
-    _activeDeliveries = _assignedOrders;
-
-    _deliveryHistory = _orderService.getOrdersByStatus(OrderStatus.delivered)
-        .where((order) => order.deliveryPartnerId == _partnerId)
-        .toList();
-
-    notifyListeners();
+    final mock = _mock;
+    if (AppConfig.useMockServices && mock != null) {
+      _assignedOrders = mock
+          .getOrdersByStatus(OrderStatus.outForDelivery)
+          .where((o) => o.deliveryPartnerId == _partnerId)
+          .toList();
+      _activeDeliveries = _assignedOrders;
+      _deliveryHistory = mock
+          .getOrdersByStatus(OrderStatus.delivered)
+          .where((o) => o.deliveryPartnerId == _partnerId)
+          .toList();
+      notifyListeners();
+    }
   }
 
-  /// Fetch assigned orders
   Future<void> fetchAssignedOrders() async {
     if (_partnerId == null) return;
-
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
-      _assignedOrders = await _orderService.getAssignedDeliveries(_partnerId!);
-      _isLoading = false;
-      notifyListeners();
+      if (AppConfig.useMockServices) {
+        _assignedOrders = await _mock!.getAssignedDeliveries(_partnerId!);
+      } else {
+        _assignedOrders = await _firestore!.getAssignedDeliveries(_partnerId!);
+      }
     } catch (e) {
       _error = e.toString();
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  /// Fetch active deliveries
   Future<void> fetchActiveDeliveries() async {
     if (_partnerId == null) return;
-
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
-      _activeDeliveries = await _orderService.getActiveDeliveries(_partnerId!);
-      _isLoading = false;
-      notifyListeners();
+      if (AppConfig.useMockServices) {
+        _activeDeliveries = await _mock!.getActiveDeliveries(_partnerId!);
+      } else {
+        _activeDeliveries = await _firestore!.getAssignedDeliveries(_partnerId!);
+      }
     } catch (e) {
       _error = e.toString();
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  /// Fetch delivery history
   Future<void> fetchDeliveryHistory() async {
     if (_partnerId == null) return;
-
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
-      _deliveryHistory = await _orderService.getDeliveryHistory(_partnerId!);
-      _isLoading = false;
-      notifyListeners();
+      if (AppConfig.useMockServices) {
+        _deliveryHistory = await _mock!.getDeliveryHistory(_partnerId!);
+      } else {
+        _deliveryHistory = await _firestore!.getDeliveryHistory(_partnerId!);
+      }
     } catch (e) {
       _error = e.toString();
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  /// Mark delivery as complete
   Future<bool> markDeliveryComplete(String orderId) async {
     try {
-      final success = await _orderService.markDeliveryComplete(orderId);
+      bool success;
+      if (AppConfig.useMockServices) {
+        success = await _mock!.markDeliveryComplete(orderId);
+      } else {
+        success = await _firestore!.markDeliveryComplete(orderId);
+      }
       if (success) {
-        // Update lists
         await fetchActiveDeliveries();
         await fetchDeliveryHistory();
         loadDeliveryStats();
@@ -150,12 +149,22 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
-  /// Load delivery partner statistics
   void loadDeliveryStats() {
     if (_partnerId == null) return;
-
     try {
-      _deliveryStats = _orderService.getDeliveryPartnerStats(_partnerId!);
+      if (AppConfig.useMockServices) {
+        _deliveryStats = _mock!.getDeliveryPartnerStats(_partnerId!);
+      } else {
+        final completed =
+            _deliveryHistory.where((o) => o.deliveryPartnerId == _partnerId).length;
+        final active =
+            _activeDeliveries.where((o) => o.deliveryPartnerId == _partnerId).length;
+        _deliveryStats = {
+          'totalDeliveries': completed,
+          'totalEarnings': completed * 30.0,
+          'activeDeliveries': active,
+        };
+      }
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -163,48 +172,38 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
-  /// Get delivery partner location (mock)
   Future<Map<String, double>> getDeliveryPartnerLocation(String orderId) async {
-    return await _orderService.getDeliveryPartnerLocation(orderId);
+    if (AppConfig.useMockServices) {
+      return await _mock!.getDeliveryPartnerLocation(orderId);
+    }
+    return await _firestore!.getDeliveryPartnerLocation(orderId);
   }
 
-  /// Group delivery history by date
   Map<String, List<OrderModel>> getHistoryGroupedByDate() {
     final grouped = <String, List<OrderModel>>{};
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
 
-    for (var order in _deliveryHistory) {
-      final orderDate = DateTime(
-        order.createdAt.year,
-        order.createdAt.month,
-        order.createdAt.day,
-      );
-
+    for (final order in _deliveryHistory) {
+      final d = DateTime(order.createdAt.year, order.createdAt.month, order.createdAt.day);
       String key;
-      if (orderDate == today) {
+      if (d == today) {
         key = 'Today';
-      } else if (orderDate == yesterday) {
+      } else if (d == yesterday) {
         key = 'Yesterday';
-      } else if (orderDate.isAfter(today.subtract(const Duration(days: 7)))) {
+      } else if (d.isAfter(today.subtract(const Duration(days: 7)))) {
         key = 'Last 7 days';
-      } else if (orderDate.isAfter(today.subtract(const Duration(days: 30)))) {
+      } else if (d.isAfter(today.subtract(const Duration(days: 30)))) {
         key = 'Last 30 days';
       } else {
         key = 'Older';
       }
-
-      if (!grouped.containsKey(key)) {
-        grouped[key] = [];
-      }
-      grouped[key]!.add(order);
+      grouped.putIfAbsent(key, () => []).add(order);
     }
-
     return grouped;
   }
 
-  /// Clear error message
   void clearError() {
     _error = null;
     notifyListeners();

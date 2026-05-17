@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../core/constants/app_strings.dart';
+import '../../../../../core/services/payment_service.dart';
 import '../../../../../shared/enums/payment_method.dart';
 import '../../../../../shared/models/address_model.dart';
 import '../../../../../shared/widgets/custom_button.dart';
@@ -22,11 +23,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   AddressModel? _selectedAddress;
   PaymentMethod _selectedPaymentMethod = PaymentMethod.cashOnDelivery;
   bool _isPlacingOrder = false;
+  final _promoController = TextEditingController();
+  String? _promoError;
 
   @override
   void initState() {
     super.initState();
-    // Set default address
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = context.read<AuthProvider>().currentUser;
       if (user != null && user.addresses.isNotEmpty) {
@@ -34,7 +36,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           _selectedAddress = user.addresses.first;
         });
       }
+      // Pre-fill promo code if already applied
+      final cartProvider = context.read<CartProvider>();
+      if (cartProvider.promoCode != null) {
+        _promoController.text = cartProvider.promoCode!;
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _promoController.dispose();
+    super.dispose();
   }
 
   @override
@@ -235,6 +248,102 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                   SizedBox(height: AppSizes.spacingLG),
 
+                  // Promo Code Section
+                  Text(
+                    'Promo Code',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  SizedBox(height: AppSizes.spacingSM),
+                  Consumer<CartProvider>(
+                    builder: (ctx, cart, _) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (cart.promoCode != null)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.success.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.local_offer, color: AppColors.success, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      '${cart.promoCode} applied!',
+                                      style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      cart.removePromoCode();
+                                      _promoController.clear();
+                                      setState(() => _promoError = null);
+                                    },
+                                    child: const Text('Remove', style: TextStyle(color: AppColors.error)),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: _promoController,
+                                    textCapitalization: TextCapitalization.characters,
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter promo code (e.g. FIRST50)',
+                                      errorText: _promoError,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    final code = _promoController.text.trim();
+                                    if (code.isEmpty) return;
+                                    final applied = cart.applyPromoCode(code);
+                                    setState(() {
+                                      _promoError = applied ? null : 'Invalid or ineligible promo code';
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryRed,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                                  ),
+                                  child: const Text('APPLY', style: TextStyle(color: Colors.white, fontSize: 13)),
+                                ),
+                              ],
+                            ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            children: ['FIRST50', 'BIRYANI20', 'FREESHIP'].map((code) => ActionChip(
+                              label: Text(code, style: const TextStyle(fontSize: 11)),
+                              onPressed: cart.promoCode == null ? () {
+                                _promoController.text = code;
+                                final applied = cart.applyPromoCode(code);
+                                setState(() => _promoError = applied ? null : 'Not eligible for this order');
+                              } : null,
+                            )).toList(),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  SizedBox(height: AppSizes.spacingLG),
+
                   // Order Summary
                   Text(
                     'Order Summary',
@@ -309,8 +418,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    // Simulate payment processing
-    await Future.delayed(const Duration(seconds: 2));
+    // Process Payment if not COD
+    if (_selectedPaymentMethod != PaymentMethod.cashOnDelivery) {
+      final paymentService = PaymentService();
+      await paymentService.initiateUpiPayment(
+        payeeVpa: 'merchant@upi',
+        payeeName: 'Harur Cloud Kitchen',
+        amount: cartProvider.total,
+        transactionNote: 'Order payment for Harur Cloud Kitchen',
+      );
+    } else {
+      // Simulate payment processing for COD
+      await Future.delayed(const Duration(seconds: 2));
+    }
 
     if (!mounted) return;
 

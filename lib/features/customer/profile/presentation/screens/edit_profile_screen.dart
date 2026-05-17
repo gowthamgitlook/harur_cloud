@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../../core/constants/app_colors.dart';
-import '../../../../../core/constants/app_sizes.dart';
-import '../../../../../core/constants/app_strings.dart';
-import '../../../../../shared/widgets/custom_button.dart';
-import '../../../../../shared/widgets/custom_text_field.dart';
-import '../../../../auth/providers/auth_provider.dart';
+import 'package:harur_cloud_kitchen/core/theme/zomato_theme.dart';
+import 'package:harur_cloud_kitchen/features/auth/providers/auth_provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -16,19 +12,16 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    // Pre-fill with current user data
     final user = context.read<AuthProvider>().currentUser;
-    if (user != null) {
-      _nameController.text = user.name;
-      _emailController.text = user.email ?? '';
-    }
+    _nameController = TextEditingController(text: user?.name ?? '');
+    _emailController = TextEditingController(text: user?.email ?? '');
   }
 
   @override
@@ -43,153 +36,66 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final user = context.watch<AuthProvider>().currentUser;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(AppStrings.editProfile),
+        title: const Text('Edit Profile'),
+        backgroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(AppSizes.paddingLG),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
-              // Avatar Section
               Stack(
                 children: [
                   CircleAvatar(
-                    radius: AppSizes.avatarXL,
-                    backgroundColor: AppColors.primaryRed.withValues(alpha: 0.1),
-                    child: Icon(
-                      Icons.person,
-                      size: AppSizes.iconXXL * 1.5,
-                      color: AppColors.primaryRed,
-                    ),
+                    radius: 50,
+                    backgroundColor: ZomatoTheme.primaryRed.withValues(alpha: 0.1),
+                    child: const Icon(Icons.person, size: 60, color: ZomatoTheme.primaryRed),
                   ),
                   Positioned(
                     bottom: 0,
                     right: 0,
-                    child: Container(
-                      padding: EdgeInsets.all(AppSizes.paddingSM),
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryRed,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.camera_alt,
-                        size: AppSizes.iconSM,
-                        color: AppColors.textLight,
-                      ),
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: ZomatoTheme.primaryRed,
+                      child: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
                     ),
                   ),
                 ],
               ),
-
-              SizedBox(height: AppSizes.spacingXS),
-
-              TextButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Photo upload - Coming soon!')),
-                  );
-                },
-                child: const Text('Change Profile Photo'),
-              ),
-
-              SizedBox(height: AppSizes.spacingXL),
-
-              // Phone Number (Read-only)
-              CustomTextField(
-                controller: TextEditingController(text: user?.phone ?? ''),
-                label: 'Phone Number',
-                hint: 'Your phone number',
-                prefixIcon: const Icon(Icons.phone),
+              const SizedBox(height: 32),
+              
+              _buildTextField('Full Name', _nameController, Icons.person_outline),
+              const SizedBox(height: 20),
+              _buildTextField('Email Address', _emailController, Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+              const SizedBox(height: 20),
+              
+              // Phone (Read-only)
+              TextFormField(
+                initialValue: user?.phone ?? '',
                 enabled: false,
-              ),
-
-              SizedBox(height: AppSizes.spacingMD),
-
-              // Name Field
-              CustomTextField(
-                controller: _nameController,
-                label: 'Full Name *',
-                hint: 'Enter your full name',
-                prefixIcon: const Icon(Icons.person),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  if (value.trim().length < 3) {
-                    return 'Name must be at least 3 characters';
-                  }
-                  return null;
-                },
-              ),
-
-              SizedBox(height: AppSizes.spacingMD),
-
-              // Email Field
-              CustomTextField(
-                controller: _emailController,
-                label: 'Email',
-                hint: 'Enter your email (optional)',
-                prefixIcon: const Icon(Icons.email),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                    if (!emailRegex.hasMatch(value)) {
-                      return 'Please enter a valid email';
-                    }
-                  }
-                  return null;
-                },
-              ),
-
-              SizedBox(height: AppSizes.spacingXL),
-
-              // Help Text
-              Container(
-                padding: EdgeInsets.all(AppSizes.paddingMD),
-                decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppSizes.radiusSM),
-                  border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: AppColors.info,
-                      size: AppSizes.iconSM,
-                    ),
-                    SizedBox(width: AppSizes.spacingSM),
-                    Expanded(
-                      child: Text(
-                        'Your phone number cannot be changed as it is linked to your account.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.info,
-                            ),
-                      ),
-                    ),
-                  ],
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  prefixIcon: const Icon(Icons.phone_android_outlined),
+                  filled: true,
+                  fillColor: ZomatoTheme.background,
                 ),
               ),
-
-              SizedBox(height: AppSizes.spacingXL),
-
-              // Save Button
-              CustomButton(
-                text: 'Save Changes',
+              
+              const SizedBox(height: 40),
+              
+              ElevatedButton(
                 onPressed: _isSaving ? null : _handleSave,
-                isLoading: _isSaving,
-                width: double.infinity,
-              ),
-
-              SizedBox(height: AppSizes.spacingMD),
-
-              // Cancel Button
-              TextButton(
-                onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ZomatoTheme.primaryRed,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _isSaving 
+                  ? const CircularProgressIndicator(color: Colors.white) 
+                  : const Text('SAVE CHANGES', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -198,51 +104,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Future<void> _handleSave() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() => _isSaving = true);
-
-    final authProvider = context.read<AuthProvider>();
-    final currentUser = authProvider.currentUser;
-
-    if (currentUser == null) {
-      setState(() => _isSaving = false);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('User not found. Please login again.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Update user profile
-    final updatedUser = currentUser.copyWith(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
-    );
-
-    authProvider.updateUser(updatedUser);
-
-    setState(() => _isSaving = false);
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profile updated successfully'),
-        backgroundColor: AppColors.success,
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {TextInputType? keyboardType}) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
       ),
+      validator: (v) => (v == null || v.isEmpty) ? 'This field is required' : null,
     );
+  }
 
-    // Go back
-    Navigator.of(context).pop();
+  Future<void> _handleSave() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isSaving = true);
+    
+    final authProvider = context.read<AuthProvider>();
+    final updatedUser = authProvider.currentUser!.copyWith(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+    );
+    
+    await authProvider.updateUserProfile(updatedUser);
+    setState(() => _isSaving = false);
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully!')));
+      Navigator.pop(context);
+    }
   }
 }

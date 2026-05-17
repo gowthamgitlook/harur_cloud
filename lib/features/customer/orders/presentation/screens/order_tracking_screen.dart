@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../../core/constants/app_colors.dart';
-import '../../../../../core/constants/app_sizes.dart';
-import '../../../../../core/theme/glass_theme.dart';
+import '../../../../../core/constants/app_routes.dart';
+import '../../../../../core/theme/zomato_theme.dart';
 import '../../../../../shared/models/order_model.dart';
 import '../../../../../shared/enums/order_status.dart';
 import '../../providers/order_provider.dart';
 import '../widgets/order_timeline_widget.dart';
 import '../../../../../shared/widgets/live_tracking_map.dart';
-import '../../../../../shared/widgets/animated_background.dart';
-import '../../../../../core/utils/permissions_handler.dart';
 
 class OrderTrackingScreen extends StatefulWidget {
   final OrderModel order;
@@ -31,10 +28,6 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   void initState() {
     super.initState();
     _currentOrder = widget.order;
-    _startOrderTracking();
-  }
-
-  void _startOrderTracking() {
     context.read<OrderProvider>().addListener(_onOrderUpdated);
   }
 
@@ -52,7 +45,6 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
   @override
   void dispose() {
-    // Provider might be already disposed
     try {
       context.read<OrderProvider>().removeListener(_onOrderUpdated);
     } catch (_) {}
@@ -62,18 +54,24 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Track Order #${_currentOrder.id.substring(0, 8)}'),
-        backgroundColor: Colors.transparent,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Track Order', style: ZomatoTheme.bodyLarge),
+            Text('#${_currentOrder.id.substring(0, 8)}', style: ZomatoTheme.bodyMedium.copyWith(fontSize: 12)),
+          ],
+        ),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
       ),
-      body: AnimatedBackground(
-        child: Stack(
-          children: [
-            // Full Screen Map Background
+      body: Stack(
+        children: [
+          // Google Map Section
           Positioned.fill(
-            bottom: 300, // Show map mostly at the top
+            bottom: 350,
             child: LiveTrackingMap(
               customerLat: _currentOrder.deliveryAddress.latitude,
               customerLng: _currentOrder.deliveryAddress.longitude,
@@ -81,35 +79,41 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             ),
           ),
 
-          // Modern Draggable Bottom Sheet
+          // Zomato-style Details Sheet
           DraggableScrollableSheet(
             initialChildSize: 0.45,
             minChildSize: 0.4,
-            maxChildSize: 0.9,
+            maxChildSize: 0.95,
             builder: (context, scrollController) {
-              return GlassMorphism(
-                blur: 20,
-                opacity: 0.1,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-                padding: EdgeInsets.zero,
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 20,
+                      offset: Offset(0, -5),
+                    ),
+                  ],
+                ),
                 child: ListView(
                   controller: scrollController,
                   padding: const EdgeInsets.all(20),
                   children: [
-                    // Handle bar
                     Center(
                       child: Container(
                         width: 40,
                         height: 4,
+                        margin: const EdgeInsets.only(bottom: 20),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: Colors.grey[300],
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
 
-                    // Status Header
+                    // Status Message
                     Row(
                       children: [
                         _buildStatusIcon(_currentOrder.status),
@@ -120,70 +124,75 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                             children: [
                               Text(
                                 _getStatusTitle(_currentOrder.status),
-                                style: GlassTheme.headlineLarge,
+                                style: ZomatoTheme.headlineLarge.copyWith(fontSize: 20),
                               ),
                               Text(
                                 _getStatusMessage(_currentOrder.status),
-                                style: GlassTheme.bodyMedium,
+                                style: ZomatoTheme.bodyMedium,
                               ),
                             ],
                           ),
                         ),
                       ],
-                    ).animate().fadeIn().slideX(begin: -0.1, end: 0),
-
-                    if (_currentOrder.status == OrderStatus.outForDelivery) ...[
-                      const SizedBox(height: 20),
-                      _buildDeliveryPartnerCard().animate().fadeIn().scale(),
-                    ],
+                    ),
 
                     const SizedBox(height: 24),
-                    const Divider(color: Colors.white24),
-                    const SizedBox(height: 16),
+                    const Divider(height: 1),
+                    const SizedBox(height: 24),
+
+                    // Delivery Partner Card
+                    if (_currentOrder.status == OrderStatus.outForDelivery)
+                      _buildPartnerCard(),
 
                     // Timeline
-                    Text('Order Status', style: GlassTheme.headlineLarge.copyWith(fontSize: 18)),
+                    Text('Order Status', style: ZomatoTheme.bodyLarge),
                     const SizedBox(height: 16),
-                    OrderTimelineWidget(order: _currentOrder).animate().fadeIn(delay: 200.ms),
+                    OrderTimelineWidget(order: _currentOrder),
 
                     const SizedBox(height: 24),
-                    const Divider(color: Colors.white24),
-                    const SizedBox(height: 16),
+                    const Divider(height: 1),
+                    const SizedBox(height: 24),
 
                     // Address
-                    Text('Delivery Location', style: GlassTheme.headlineLarge.copyWith(fontSize: 18)),
-                    const SizedBox(height: 12),
+                    Text('Delivery Address', style: ZomatoTheme.bodyLarge),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, color: GlassTheme.primaryBlue, size: 20),
+                        const Icon(Icons.location_on, color: ZomatoTheme.primaryRed, size: 20),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            '${_currentOrder.deliveryAddress.label}: ${_currentOrder.deliveryAddress.fullAddress}',
-                            style: GlassTheme.bodyMedium,
+                            _currentOrder.deliveryAddress.fullAddress,
+                            style: ZomatoTheme.bodyMedium,
                           ),
                         ),
                       ],
-                    ).animate().fadeIn(delay: 400.ms),
+                    ),
 
-                    const SizedBox(height: 24),
-                    const Divider(color: Colors.white24),
-                    const SizedBox(height: 16),
+                    // Rate Order button for delivered orders
+                    if (_currentOrder.status == OrderStatus.delivered) ...[
+                      const SizedBox(height: 24),
+                      const Divider(height: 1),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.pushNamed(
+                            context,
+                            AppRoutes.writeReview,
+                            arguments: _currentOrder,
+                          ),
+                          icon: const Icon(Icons.star_outline, color: Colors.white),
+                          label: const Text('Rate this order', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ZomatoTheme.primaryRed,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ).animate().fadeIn(duration: 400.ms),
+                    ],
 
-                    // Items Summary
-                    Text('Items (${_currentOrder.items.length})', style: GlassTheme.headlineLarge.copyWith(fontSize: 18)),
-                    const SizedBox(height: 12),
-                    ..._currentOrder.items.map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        children: [
-                          Text('${item.quantity} x ', style: const TextStyle(fontWeight: FontWeight.bold, color: GlassTheme.primaryBlue)),
-                          Expanded(child: Text(item.menuItem.name, style: GlassTheme.bodyMedium)),
-                          Text('₹${item.totalPrice.toStringAsFixed(0)}', style: GlassTheme.bodyMedium),
-                        ],
-                      ),
-                    )).toList().animate(interval: 50.ms).fadeIn(),
-                    
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -191,23 +200,24 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             },
           ),
         ],
-      ),),
+      ),
     );
   }
 
-  Widget _buildDeliveryPartnerCard() {
+  Widget _buildPartnerCard() {
     return Container(
+      margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        color: Colors.blue[50]?.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue[100]!),
       ),
       child: Row(
         children: [
           const CircleAvatar(
-            backgroundColor: GlassTheme.primaryBlue,
-            child: Icon(Icons.person, color: Colors.white),
+            backgroundColor: Colors.blue,
+            child: Icon(Icons.delivery_dining, color: Colors.white),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -215,17 +225,23 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _currentOrder.deliveryPartnerName ?? 'Rahul (Partner)',
-                  style: GlassTheme.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                  _currentOrder.deliveryPartnerName ?? 'Rahul',
+                  style: ZomatoTheme.bodyLarge,
                 ),
-                const Text('Arriving in 5 mins', style: TextStyle(fontSize: 12, color: GlassTheme.successGreen, fontWeight: FontWeight.bold)),
+                Text('Your delivery partner', style: ZomatoTheme.bodyMedium.copyWith(fontSize: 12)),
               ],
             ),
           ),
-          IconButton(
-            onPressed: () => PermissionsHandler.makePhoneCall('9876543210'),
-            icon: const Icon(Icons.call, color: GlassTheme.successGreen),
-            style: IconButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.1)),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.blue,
+              side: const BorderSide(color: Colors.blue),
+              minimumSize: const Size(80, 36),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Call'),
           ),
         ],
       ),
@@ -236,11 +252,11 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     IconData icon;
     Color color;
     switch (status) {
-      case OrderStatus.placed: icon = Icons.receipt; color = GlassTheme.infoBlue; break;
-      case OrderStatus.preparing: icon = Icons.restaurant; color = GlassTheme.warningYellow; break;
-      case OrderStatus.outForDelivery: icon = Icons.delivery_dining; color = GlassTheme.primaryBlue; break;
-      case OrderStatus.delivered: icon = Icons.check_circle; color = GlassTheme.successGreen; break;
-      case OrderStatus.cancelled: icon = Icons.cancel; color = GlassTheme.errorRed; break;
+      case OrderStatus.placed: icon = Icons.check_circle; color = Colors.green; break;
+      case OrderStatus.preparing: icon = Icons.restaurant; color = Colors.orange; break;
+      case OrderStatus.outForDelivery: icon = Icons.delivery_dining; color = Colors.blue; break;
+      case OrderStatus.delivered: icon = Icons.home; color = Colors.green; break;
+      case OrderStatus.cancelled: icon = Icons.cancel; color = Colors.red; break;
     }
 
     return Container(
@@ -252,8 +268,8 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
   String _getStatusTitle(OrderStatus status) {
     switch (status) {
-      case OrderStatus.placed: return 'Confirmed';
-      case OrderStatus.preparing: return 'Kitchen is busy';
+      case OrderStatus.placed: return 'Order Placed';
+      case OrderStatus.preparing: return 'Preparing your food';
       case OrderStatus.outForDelivery: return 'On the way';
       case OrderStatus.delivered: return 'Delivered';
       case OrderStatus.cancelled: return 'Cancelled';
@@ -262,11 +278,11 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
   String _getStatusMessage(OrderStatus status) {
     switch (status) {
-      case OrderStatus.placed: return 'Restaurant has accepted your order';
-      case OrderStatus.preparing: return 'Chef is preparing your delicious meal';
-      case OrderStatus.outForDelivery: return 'Rahul is bringing your order';
-      case OrderStatus.delivered: return 'Enjoy your hot food!';
-      case OrderStatus.cancelled: return 'Order was not completed';
+      case OrderStatus.placed: return 'Wait while we confirm with the restaurant';
+      case OrderStatus.preparing: return 'The chef is working their magic';
+      case OrderStatus.outForDelivery: return 'Our partner is bringing your meal';
+      case OrderStatus.delivered: return 'Enjoy your meal!';
+      case OrderStatus.cancelled: return 'Order was cancelled';
     }
   }
 }

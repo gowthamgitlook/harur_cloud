@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../../core/constants/app_colors.dart';
-import '../../../../../core/constants/app_sizes.dart';
-import '../../../../../core/constants/app_strings.dart';
-import '../../../../../core/theme/glass_theme.dart';
-import '../../../../../shared/widgets/loading_indicator.dart';
-import '../../../../../shared/widgets/animated_background.dart';
-import '../../../../auth/providers/auth_provider.dart';
+import '../../../../../core/theme/zomato_theme.dart';
+import '../../../../../core/constants/app_routes.dart';
 import '../../providers/order_provider.dart';
+import '../../../../auth/providers/auth_provider.dart';
 import '../widgets/order_card_widget.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -18,189 +14,94 @@ class OrdersScreen extends StatefulWidget {
   State<OrdersScreen> createState() => _OrdersScreenState();
 }
 
-class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
+class _OrdersScreenState extends State<OrdersScreen> {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-
-    // Fetch orders on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshOrders();
+      final authProvider = context.read<AuthProvider>();
+      if (authProvider.currentUser != null) {
+        context.read<OrderProvider>().fetchOrders(authProvider.currentUser!.id);
+      }
     });
-  }
-
-  void _refreshOrders() {
-    final user = context.read<AuthProvider>().currentUser;
-    if (user != null) {
-      context.read<OrderProvider>().fetchOrders(user.id);
-    }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final orderProvider = context.watch<OrderProvider>();
+
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: ZomatoTheme.background,
       appBar: AppBar(
-        title: const Text(AppStrings.myOrders, style: GlassTheme.headlineLarge),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicator: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
-                gradient: GlassTheme.buttonGradient,
+        title: const Text('My Orders'),
+        backgroundColor: Colors.white,
+      ),
+      body: orderProvider.isLoading 
+        ? const Center(child: CircularProgressIndicator(color: ZomatoTheme.primaryRed))
+        : orderProvider.orders.isEmpty 
+          ? _buildEmptyState()
+          : _buildOrdersList(orderProvider),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          Text('No orders yet', style: ZomatoTheme.headlineLarge.copyWith(fontSize: 20)),
+          const SizedBox(height: 8),
+          const Text('Your delicious meals will appear here.', style: TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrdersList(OrderProvider provider) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: provider.orders.length,
+      itemBuilder: (context, index) {
+        final order = provider.orders[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: ZomatoTheme.cardShadow,
+          ),
+          child: Column(
+            children: [
+              OrderCardWidget(
+                order: order,
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.orderTracking,
+                    arguments: order,
+                  );
+                },
               ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelColor: Colors.white,
-              unselectedLabelColor: GlassTheme.textSecondary,
-              tabs: const [
-                Tab(text: 'Active'),
-                Tab(text: 'History'),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: AnimatedBackground(
-        child: Stack(
-          children: [
-            Consumer<OrderProvider>(
-            builder: (context, orderProvider, child) {
-              if (orderProvider.isLoading) {
-                return const LoadingIndicator(message: 'Loading orders...');
-              }
-
-              if (orderProvider.error != null) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, size: 60, color: GlassTheme.errorRed),
-                      const SizedBox(height: 16),
-                      Text(orderProvider.error!, textAlign: TextAlign.center, style: GlassTheme.bodyLarge),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _refreshOrders,
-                        child: const Text('Retry'),
-                      ),
-                    ],
+              if (order.status.index < 3) // If not delivered/cancelled
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, AppRoutes.orderTracking, arguments: order),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: ZomatoTheme.primaryRed,
+                      side: const BorderSide(color: ZomatoTheme.primaryRed),
+                      minimumSize: const Size(double.infinity, 40),
+                    ),
+                    child: const Text('TRACK ORDER'),
                   ),
-                );
-              }
-
-              return TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildOrdersList(orderProvider.activeOrders, 'No active orders'),
-                  _buildOrdersList(orderProvider.orderHistory, 'No order history'),
-                ],
-              );
-            },
+                ),
+            ],
           ),
-        ],
-      ),),
+        ).animate().fadeIn(delay: (index * 100).ms).slideY(begin: 0.1, end: 0);
+      },
     );
-  }
-
-  Widget _buildOrdersList(List orders, String emptyMessage) {
-    if (orders.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.receipt_long_outlined, size: 80, color: Colors.white.withValues(alpha: 0.3)),
-            const SizedBox(height: 16),
-            Text(
-              emptyMessage,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white.withValues(alpha: 0.5)),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async => _refreshOrders(),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(AppSizes.paddingMD),
-        itemCount: orders.length,
-        itemBuilder: (context, index) {
-          final order = orders[index];
-          return OrderCardWidget(
-            order: order,
-            onTap: () {
-              Navigator.of(context).pushNamed(
-                '/customer/order-tracking',
-                arguments: order,
-              );
-            },
-            onCancel: () => _showCancelDialog(context, order.id),
-            onReorder: () => _handleReorder(context, order),
-          ).animate().fadeIn(delay: (index * 100).ms).slideY(begin: 0.1, end: 0);
-        },
-      ),
-    );
-  }
-
-  void _showCancelDialog(BuildContext context, String orderId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cancel Order?'),
-        content: const Text('Are you sure you want to cancel this order?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('No')),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final success = await context.read<OrderProvider>().cancelOrder(orderId);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'Cancelled' : 'Cannot cancel now'),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
-              }
-            },
-            child: const Text('Yes, Cancel', style: TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _handleReorder(BuildContext context, order) async {
-    final newOrder = await context.read<OrderProvider>().reorder(order);
-    if (context.mounted && newOrder != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Reordered successfully'),
-          backgroundColor: Colors.green,
-          action: SnackBarAction(
-            label: 'VIEW',
-            onPressed: () => Navigator.pushNamed(context, '/customer/order-tracking', arguments: newOrder),
-          ),
-        ),
-      );
-    }
   }
 }

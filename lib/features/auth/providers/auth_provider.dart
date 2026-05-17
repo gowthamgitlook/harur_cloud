@@ -187,10 +187,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Update user (simple method for immediate update)
+  // Update user (simple method for immediate update — also persists to storage)
   void updateUser(UserModel updatedUser) {
     _currentUser = updatedUser;
     notifyListeners();
+    _authService.saveUser(updatedUser);
   }
 
   // Clear error

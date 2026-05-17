@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../core/constants/app_strings.dart';
 import '../../../../../core/theme/glass_theme.dart';
@@ -11,6 +10,7 @@ import '../../../../../shared/models/addon_model.dart';
 import '../../../../../shared/models/menu_item_model.dart';
 import '../../../../../shared/widgets/animated_background.dart';
 import '../../../cart/providers/cart_provider.dart';
+import '../../../../auth/providers/auth_provider.dart';
 
 class FoodDetailScreen extends StatefulWidget {
   final MenuItemModel menuItem;
@@ -44,6 +44,10 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.currentUser;
+    final isFav = user?.favoriteItemIds.contains(widget.menuItem.id) ?? false;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: AnimatedBackground(
@@ -55,6 +59,32 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
               pinned: true,
               backgroundColor: Colors.transparent,
               elevation: 0,
+              actions: [
+                CircleAvatar(
+                  backgroundColor: Colors.white.withValues(alpha: 0.9),
+                  child: IconButton(
+                    icon: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? Colors.red : Colors.grey[700],
+                    ),
+                    onPressed: () {
+                      if (user == null) return;
+                      final updatedIds = List<String>.from(user.favoriteItemIds);
+                      if (isFav) {
+                        updatedIds.remove(widget.menuItem.id);
+                      } else {
+                        updatedIds.add(widget.menuItem.id);
+                      }
+                      authProvider.updateUser(user.copyWith(favoriteItemIds: updatedIds));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(isFav ? 'Removed from favourites' : 'Added to favourites'),
+                        duration: const Duration(seconds: 1),
+                      ));
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   color: GlassTheme.primaryBlue.withValues(alpha: 0.1),
@@ -87,9 +117,37 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  widget.menuItem.name,
-                                  style: GlassTheme.displayMedium,
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 18,
+                                      height: 18,
+                                      margin: const EdgeInsets.only(right: 8),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: widget.menuItem.isVeg ? Colors.green : Colors.red,
+                                          width: 1.5,
+                                        ),
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      child: Center(
+                                        child: Container(
+                                          width: 10,
+                                          height: 10,
+                                          decoration: BoxDecoration(
+                                            color: widget.menuItem.isVeg ? Colors.green : Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        widget.menuItem.name,
+                                        style: GlassTheme.displayMedium,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 SizedBox(height: AppSizes.spacingXS),
                                 Text(

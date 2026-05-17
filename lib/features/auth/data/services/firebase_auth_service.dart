@@ -1,39 +1,37 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/enums/user_role.dart';
+import '../../../../data/services/firestore_user_service.dart';
 import 'auth_service_interface.dart';
 
 class FirebaseAuthService implements IAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: kIsWeb
+        ? '658997155851-pfkdjv2s7pnoa5e23685p2l11ofg8te1.apps.googleusercontent.com'
+        : null,
+  );
+  final FirestoreUserService _userService = FirestoreUserService();
   static const String _userKey = 'current_user';
   String? _verificationId;
 
   @override
   Future<UserModel> loginWithEmail(String email, String password) async {
     try {
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      
-      final user = credential.user;
+      final cred = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
+      final user = cred.user;
       if (user == null) throw Exception('Login failed');
-
-      // You should fetch additional user data from Firestore here
-      final userModel = UserModel(
-        id: user.uid,
-        name: user.displayName ?? email.split('@')[0],
-        email: user.email,
-        phone: user.phoneNumber ?? '',
-        role: UserRole.customer,
-      );
-      
+      final userModel =
+          await _userService.getUser(user.uid) ?? _defaultUser(user);
       await saveUser(userModel);
       return userModel;
     } on FirebaseAuthException catch (e) {
-      throw Exception(e.message ?? 'An error occurred during login');
+      throw Exception(e.message ?? 'Login error');
     }
   }
 
@@ -46,81 +44,75 @@ class FirebaseAuthService implements IAuthService {
     required UserRole role,
   }) async {
     try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      
-      final user = credential.user;
+      final cred = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      final user = cred.user;
       if (user == null) throw Exception('Registration failed');
-
       await user.updateDisplayName(name);
-
       final userModel = UserModel(
-        id: user.uid,
-        name: name,
-        email: email,
-        phone: phone,
-        role: role,
-      );
-
-      // Save additional user info to Firestore here
-      
+          id: user.uid, name: name, email: email, phone: phone, role: role);
+      await _userService.createUser(userModel);
       await saveUser(userModel);
       return userModel;
     } on FirebaseAuthException catch (e) {
-      throw Exception(e.message ?? 'An error occurred during registration');
+      throw Exception(e.message ?? 'Registration error');
     }
   }
 
   @override
   Future<UserModel?> getCurrentUser() async {
-    final user = _auth.currentUser;
-    if (user == null) {
-      // Check local storage if Firebase session is gone but we have a saved user
+    final firebaseUser = _auth.currentUser;
+    if (firebaseUser == null) {
       final prefs = await SharedPreferences.getInstance();
-      final userJson = prefs.getString(_userKey);
-      if (userJson != null) {
+      final json = prefs.getString(_userKey);
+      if (json != null) {
         try {
-          return UserModel.fromJson(jsonDecode(userJson));
-        } catch (e) {
-          return null;
-        }
+          return UserModel.fromJson(jsonDecode(json));
+        } catch (_) {}
       }
       return null;
     }
-
-    // In a real app, you would fetch additional user data (like role) from Firestore
-    return UserModel(
-      id: user.uid,
-      phone: user.phoneNumber ?? '',
-      name: user.displayName ?? 'User',
-      email: user.email,
-      role: UserRole.customer, // Default to customer
-      addresses: [],
-    );
+    // Try Firestore first for full profile (role, addresses, favourites)
+    try {
+      final userModel = await _userService.getUser(firebaseUser.uid);
+      if (userModel != null) {
+        await saveUser(userModel);
+        return userModel;
+      }
+    } catch (_) {}
+    // Fallback: SharedPreferences cached copy
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString(_userKey);
+    if (json != null) {
+      try {
+        return UserModel.fromJson(jsonDecode(json));
+      } catch (_) {}
+    }
+    return _defaultUser(firebaseUser);
   }
 
   @override
   Future<bool> sendOTP(String phoneNumber) async {
     try {
+      bool codeSent = false;
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
+        verificationCompleted: (PhoneAuthCredential cred) async {
+          await _auth.signInWithCredential(cred);
         },
         verificationFailed: (FirebaseAuthException e) {
           throw e;
         },
         codeSent: (String verificationId, int? resendToken) {
           _verificationId = verificationId;
+          codeSent = true;
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           _verificationId = verificationId;
         },
       );
-      return true;
-    } catch (e) {
+      return codeSent;
+    } catch (_) {
       return false;
     }
   }
@@ -129,46 +121,80 @@ class FirebaseAuthService implements IAuthService {
   Future<UserModel> verifyOTP(String phoneNumber, String otp) async {
     try {
       if (_verificationId == null) {
-        throw Exception('Verification ID is missing. Please request OTP again.');
+        throw Exception('Verification ID missing. Please request OTP again.');
       }
-
-      final credential = PhoneAuthProvider.credential(
-        verificationId: _verificationId!,
-        smsCode: otp,
-      );
-
-      final result = await _auth.signInWithCredential(credential);
+      final cred = PhoneAuthProvider.credential(
+          verificationId: _verificationId!, smsCode: otp);
+      final result = await _auth.signInWithCredential(cred);
       final user = result.user;
-
       if (user == null) throw Exception('Verification failed');
 
-      // Fetch user data from Firestore or create new profile
-      final userModel = UserModel(
-        id: user.uid,
-        name: user.displayName ?? 'New User',
-        phone: phoneNumber,
-        email: user.email,
-        role: UserRole.customer,
-      );
-
-      await saveUser(userModel);
-      return userModel;
+      // Check Firestore for existing profile
+      UserModel? existing = await _userService.getUser(user.uid);
+      if (existing == null) {
+        existing = UserModel(
+          id: user.uid,
+          name: user.displayName ?? 'User',
+          phone: phoneNumber,
+          email: user.email,
+          role: UserRole.customer,
+        );
+        await _userService.createUser(existing);
+      }
+      await saveUser(existing);
+      return existing;
     } on FirebaseAuthException catch (e) {
       throw Exception(e.message ?? 'Invalid OTP');
-    } catch (e) {
-      throw Exception('Verification failed: $e');
     }
   }
 
   @override
   Future<UserModel> loginWithGoogle() async {
-    // This requires google_sign_in package
-    throw UnimplementedError('Google login not implemented yet');
+    try {
+      User? firebaseUser;
+
+      if (kIsWeb) {
+        // On web: use Firebase's signInWithPopup — no separate Google SDK needed
+        final provider = GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
+        final result = await _auth.signInWithPopup(provider);
+        firebaseUser = result.user;
+      } else {
+        // On mobile: use google_sign_in package
+        final googleUser = await _googleSignIn.signIn();
+        if (googleUser == null) throw Exception('Google sign-in cancelled');
+        final googleAuth = await googleUser.authentication;
+        final cred = GoogleAuthProvider.credential(
+            accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
+        final result = await _auth.signInWithCredential(cred);
+        firebaseUser = result.user;
+      }
+
+      if (firebaseUser == null) throw Exception('Google sign-in failed');
+
+      UserModel? existing = await _userService.getUser(firebaseUser.uid);
+      if (existing == null) {
+        existing = UserModel(
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName ?? 'User',
+          email: firebaseUser.email,
+          phone: firebaseUser.phoneNumber ?? '',
+          role: UserRole.customer,
+        );
+        await _userService.createUser(existing);
+      }
+      await saveUser(existing);
+      return existing;
+    } catch (e) {
+      throw Exception('Google login failed: $e');
+    }
   }
 
   @override
   Future<void> logout() async {
     await _auth.signOut();
+    await _googleSignIn.signOut();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
   }
@@ -176,18 +202,25 @@ class FirebaseAuthService implements IAuthService {
   @override
   Future<void> saveUser(UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
-    final userJson = jsonEncode(user.toJson());
-    await prefs.setString(_userKey, userJson);
+    await prefs.setString(_userKey, jsonEncode(user.toJson()));
   }
 
   @override
   Future<UserModel> updateUser(UserModel user) async {
-    final currentUser = _auth.currentUser;
-    if (currentUser != null) {
-      await currentUser.updateDisplayName(user.name);
-      // Update email if changed (requires verification)
+    final firebaseUser = _auth.currentUser;
+    if (firebaseUser != null) {
+      await firebaseUser.updateDisplayName(user.name);
     }
+    await _userService.updateUser(user);
     await saveUser(user);
     return user;
   }
+
+  UserModel _defaultUser(User user) => UserModel(
+        id: user.uid,
+        name: user.displayName ?? 'User',
+        email: user.email,
+        phone: user.phoneNumber ?? '',
+        role: UserRole.customer,
+      );
 }

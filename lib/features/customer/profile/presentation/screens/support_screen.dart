@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_colors.dart';
-import '../../../../../core/constants/app_sizes.dart';
 import '../../../../../core/utils/permissions_handler.dart';
 
 class SupportScreen extends StatelessWidget {
@@ -46,8 +45,18 @@ class SupportScreen extends StatelessWidget {
               icon: Icons.email_outlined,
               title: 'Email us',
               subtitle: 'support@harurcloud.com',
-              onTap: () {
-                // TODO: Launch email
+              onTap: () async {
+                final uri = Uri(
+                  scheme: 'mailto',
+                  path: 'support@harurcloud.com',
+                  queryParameters: {'subject': 'Support Request - Harur Cloud Kitchen'},
+                );
+                final launched = await PermissionsHandler.launchEmail(uri);
+                if (!launched && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Could not open email app')),
+                  );
+                }
               },
             ),
             

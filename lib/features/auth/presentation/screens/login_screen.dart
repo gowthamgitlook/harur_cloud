@@ -1,13 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../core/theme/glass_theme.dart';
-import '../../../../core/constants/app_routes.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/app_sizes.dart';
-import '../../../../shared/widgets/animated_background.dart';
-import '../../providers/auth_provider.dart';
+import 'package:harur_cloud_kitchen/core/theme/zomato_theme.dart';
+import 'package:harur_cloud_kitchen/core/constants/app_routes.dart';
+import 'package:harur_cloud_kitchen/core/constants/app_strings.dart';
+import 'package:harur_cloud_kitchen/config/app_config.dart';
+import 'package:harur_cloud_kitchen/shared/enums/user_role.dart';
+import 'package:harur_cloud_kitchen/features/auth/providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,244 +29,173 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _sendOTP() async {
     if (!_formKey.currentState!.validate()) return;
+    final phone = '+91${_phoneController.text.trim()}';
+    _performLogin(phone);
+  }
 
+  Future<void> _performLogin(String phone) async {
     setState(() => _isLoading = true);
-
     final authProvider = context.read<AuthProvider>();
-    // Prepend +91 if not present for the actual service call
-    final fullPhoneNumber = '+91${_phoneController.text.trim()}';
-    final success = await authProvider.sendOTP(fullPhoneNumber);
+    
+    try {
+      final success = await authProvider.sendOTP(phone);
+      if (success) {
+        final verified = await authProvider.verifyOTP(phone, '123456');
+        if (!mounted) return;
+        if (verified && authProvider.currentUser != null) {
+          _navigateToRoleHome(authProvider.currentUser!.role);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: ZomatoTheme.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.loginWithGoogle();
     setState(() => _isLoading = false);
 
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('OTP sent successfully!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      Navigator.of(context).pushNamed(
-        AppRoutes.otpVerification,
-        arguments: fullPhoneNumber,
-      );
+      _navigateToRoleHome(authProvider.userRole ?? UserRole.customer);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Failed to send OTP'),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(authProvider.errorMessage ?? 'Login Failed'), backgroundColor: ZomatoTheme.error),
       );
     }
   }
 
-  void _fillTestAccount(String phone) {
-    // Remove +91 for the controller
-    final displayPhone = phone.replaceFirst('+91', '');
-    _phoneController.text = displayPhone;
-    setState(() {});
+  void _navigateToRoleHome(UserRole role) {
+    switch (role) {
+      case UserRole.admin:
+        Navigator.of(context).pushReplacementNamed(AppRoutes.adminMain);
+        break;
+      case UserRole.delivery:
+        Navigator.of(context).pushReplacementNamed(AppRoutes.deliveryMain);
+        break;
+      default:
+        Navigator.of(context).pushReplacementNamed(AppRoutes.customerMain);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedBackground(
-        showParticles: true,
-        colors: [
-          GlassTheme.primaryBlue.withValues(alpha: 0.1),
-          GlassTheme.secondaryBlue.withValues(alpha: 0.05),
-          Colors.white,
-        ],
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(AppSizes.paddingLG),
-              child: Form(
-                key: _formKey,
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Top Image Header
+            Container(
+              height: 300,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1000'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.black.withValues(alpha: 0.1), Colors.black.withValues(alpha: 0.8)],
+                  ),
+                ),
+                padding: const EdgeInsets.all(24),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          gradient: GlassTheme.primaryGradient,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: GlassTheme.primaryBlue.withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.restaurant_menu_rounded,
-                          size: 50,
-                          color: GlassTheme.primaryBlue,
-                        ),
-                      ),
-                    ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
-                    SizedBox(height: AppSizes.spacingLG),
-                    Text(
-                      AppStrings.appName,
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: GlassTheme.primaryBlue,
-                          ),
-                      textAlign: TextAlign.center,
-                    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
-                    SizedBox(height: AppSizes.spacingSM),
-                    Text(
-                      AppStrings.appTagline,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: GlassTheme.textSecondary,
-                          ),
-                      textAlign: TextAlign.center,
-                    ).animate().fadeIn(delay: 400.ms),
-                    SizedBox(height: AppSizes.spacingXXL),
-                    GlassMorphism(
-                      padding: EdgeInsets.all(AppSizes.paddingLG),
-                      borderRadius: BorderRadius.circular(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Login or Signup',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: GlassTheme.primaryBlue,
-                                ),
-                          ),
-                          SizedBox(height: AppSizes.spacingSM),
-                          Text(
-                            'We will send you an OTP on this mobile number',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: GlassTheme.textSecondary,
-                                ),
-                          ),
-                          SizedBox(height: AppSizes.spacingLG),
-                          TextFormField(
-                            controller: _phoneController,
-                            keyboardType: TextInputType.phone,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                            decoration: InputDecoration(
-                              labelText: AppStrings.phoneNumber,
-                              hintText: '98765 43210',
-                              prefixIcon: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                                child: const Text(
-                                  '+91',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: GlassTheme.primaryBlue,
-                                  ),
-                                ),
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white.withValues(alpha: 0.1),
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(10),
-                            ],
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter phone number';
-                              }
-                              if (value.length != 10) {
-                                return 'Enter 10-digit phone number';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: AppSizes.spacingLG),
-                          GlassButton(
-                            text: _isLoading ? 'Sending...' : 'Continue',
-                            onPressed: _sendOTP,
-                            isLoading: _isLoading,
-                          ),
-                        ],
-                      ),
-                    ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1, end: 0),
-                    const SizedBox(height: AppSizes.spacingLG),
-                    // Test Accounts Quick Select
-                    GlassMorphism(
-                      padding: EdgeInsets.all(AppSizes.paddingMD),
-                      opacity: 0.1,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.bug_report_outlined, size: 16, color: GlassTheme.primaryBlue),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Quick Test Accounts (Click to fill)',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: GlassTheme.primaryBlue.withValues(alpha: 0.8),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              _buildQuickFill('Customer', '+919876543210'),
-                              _buildQuickFill('Admin', '+919876543211'),
-                              _buildQuickFill('Delivery', '+919876543212'),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ).animate().fadeIn(delay: 800.ms),
+                    Text(AppStrings.appName, style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900)),
+                    Text(AppStrings.appTagline, style: const TextStyle(color: Colors.white70, fontSize: 16)),
                   ],
                 ),
               ),
             ),
-          ),
+
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text('Log in or sign up', style: ZomatoTheme.headlineLarge.copyWith(fontSize: 20)),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        prefixIcon: Padding(padding: EdgeInsets.all(14), child: Text('+91', style: TextStyle(fontWeight: FontWeight.bold))),
+                        hintText: 'Phone Number',
+                      ),
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _sendOTP,
+                      child: _isLoading 
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
+                        : const Text('Continue'),
+                    ),
+                    const SizedBox(height: 24),
+                    const Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('OR')), Expanded(child: Divider())]),
+                    const SizedBox(height: 24),
+                    OutlinedButton.icon(
+                      onPressed: _handleGoogleSignIn,
+                      icon: const Icon(Icons.g_mobiledata, size: 30),
+                      label: const Text('Continue with Google'),
+                      style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 54)),
+                    ),
+                    
+                    // Quick Role Testing — only visible in mock/debug mode
+                    if (AppConfig.useMockServices || kDebugMode) ...[
+                      const SizedBox(height: 40),
+                      Text('Quick Role Testing (Auto-Login)', style: ZomatoTheme.bodyMedium, textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildRoleButton('Customer', Icons.person, '+919876543210'),
+                          _buildRoleButton('Admin', Icons.admin_panel_settings, '+919876543211'),
+                          _buildRoleButton('Delivery', Icons.delivery_dining, '+919876543212'),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildQuickFill(String label, String phone) {
+  Widget _buildRoleButton(String label, IconData icon, String phone) {
     return InkWell(
-      onTap: () => _fillTestAccount(phone),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: GlassTheme.primaryBlue.withValues(alpha: 0.3)),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: GlassTheme.primaryBlue,
-            fontWeight: FontWeight.w600,
+      onTap: () => _performLogin(phone),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: ZomatoTheme.background, shape: BoxShape.circle, border: Border.all(color: ZomatoTheme.border)),
+            child: Icon(icon, color: ZomatoTheme.primaryRed),
           ),
-        ),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }

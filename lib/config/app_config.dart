@@ -9,8 +9,8 @@ class AppConfig {
   static const String firebaseProjectId = 'harur-cloud';
 
   // App Version
-  static const String appVersion = '1.0.0';
-  static const int buildNumber = 1;
+  static const String appVersion = '1.7.0';
+  static const int buildNumber = 7;
 
   // Delivery Configuration
   static const double deliveryFeeFlat = 30.0;
