@@ -11,14 +11,17 @@ import 'auth_service_interface.dart';
 
 class FirebaseAuthService implements IAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: kIsWeb
-        ? '658997155851-pfkdjv2s7pnoa5e23685p2l11ofg8te1.apps.googleusercontent.com'
-        : null,
-  );
   final FirestoreUserService _userService = FirestoreUserService();
   static const String _userKey = 'current_user';
   String? _verificationId;
+  bool _googleInitialized = false;
+
+  Future<void> _ensureGoogleInitialized() async {
+    if (_googleInitialized) return;
+    // clientId comes from google-services.json (Android) / GoogleService-Info.plist (iOS)
+    await GoogleSignIn.instance.initialize();
+    _googleInitialized = true;
+  }
 
   @override
   Future<UserModel> loginWithEmail(String email, String password) async {
@@ -168,12 +171,11 @@ class FirebaseAuthService implements IAuthService {
         final result = await _auth.signInWithPopup(provider);
         firebaseUser = result.user;
       } else {
-        // On mobile: use google_sign_in package
-        final googleUser = await _googleSignIn.signIn();
-        if (googleUser == null) throw Exception('Google sign-in cancelled');
-        final googleAuth = await googleUser.authentication;
-        final cred = GoogleAuthProvider.credential(
-            accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
+        // On mobile: use google_sign_in package (v7.x singleton API)
+        await _ensureGoogleInitialized();
+        final googleUser = await GoogleSignIn.instance.authenticate();
+        final idToken = googleUser.authentication.idToken;
+        final cred = GoogleAuthProvider.credential(idToken: idToken);
         final result = await _auth.signInWithCredential(cred);
         firebaseUser = result.user;
       }
@@ -201,7 +203,9 @@ class FirebaseAuthService implements IAuthService {
   @override
   Future<void> logout() async {
     await _auth.signOut();
-    await _googleSignIn.signOut();
+    if (!kIsWeb && _googleInitialized) {
+      await GoogleSignIn.instance.signOut();
+    }
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
   }

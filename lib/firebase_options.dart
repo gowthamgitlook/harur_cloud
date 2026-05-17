@@ -35,13 +35,13 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.harur.cloudkitchen',
   );
 
-  // Replace with real web config once web app is registered in Firebase console
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD9aeD94-WWpXJuKlxQ43V4xm93B8dKuw8',
-    appId: '1:658997155851:web:000000000000000000000000',
+    apiKey: 'AIzaSyCRiaEopSt_t1UUV7uaLUSr-RRhL0EhdpY',
+    appId: '1:658997155851:web:817fe27b0dc21dffa48f0e',
     messagingSenderId: '658997155851',
     projectId: 'harur-cloud',
     storageBucket: 'harur-cloud.firebasestorage.app',
     authDomain: 'harur-cloud.firebaseapp.com',
+    measurementId: 'G-VNTYN9G1DZ',
   );
 }

@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  # ─── Analyze & Test ──────────────────────────────────────────────────────────
+  # ─── Analyze ─────────────────────────────────────────────────────────────────
   analyze:
     name: Analyze & Test
     runs-on: ubuntu-latest
@@ -16,7 +16,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.41.5'
           channel: stable
           cache: true
 
@@ -44,7 +44,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.41.5'
           channel: stable
           cache: true
 
@@ -57,20 +57,22 @@ jobs:
         run: echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
 
       - name: Write local.properties
-        run: |
-          echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> android/local.properties
+        run: echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> android/local.properties
 
-      - name: Build APK
+      - name: Build APK (split per ABI)
         run: flutter build apk --release --split-per-abi
+
+      - name: Build Universal APK
+        run: flutter build apk --release
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-apks
           path: build/app/outputs/flutter-apk/*.apk
-          retention-days: 7
+          retention-days: 30
 
-  # ─── Build & Deploy Web to Firebase Hosting ───────────────────────────────────
+  # ─── Build & Deploy Web to Firebase Hosting ──────────────────────────────────
   deploy-web:
     name: Deploy Web
     needs: analyze
@@ -81,7 +83,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.41.5'
           channel: stable
           cache: true
 
@@ -89,7 +91,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Web
-        run: flutter build web --release --web-renderer canvaskit
+        run: flutter build web --release
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
