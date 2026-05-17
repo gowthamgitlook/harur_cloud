@@ -27,11 +27,11 @@ class UserModel {
   // From JSON
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      phone: json['phone'] as String,
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? 'User',
+      phone: json['phone'] as String? ?? '',
       email: json['email'] as String?,
-      role: UserRole.fromString(json['role'] as String),
+      role: UserRole.fromString(json['role'] as String? ?? 'customer'),
       addresses: (json['addresses'] as List<dynamic>?)
               ?.map((addr) => AddressModel.fromJson(addr as Map<String, dynamic>))
               .toList() ??

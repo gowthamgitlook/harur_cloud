@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -196,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     
                     // Quick Role Testing — only visible in mock/debug mode
-                    if (AppConfig.useMockServices || kDebugMode) ...[
+                    if (AppConfig.useMockServices) ...[
                       const SizedBox(height: 40),
                       Text('Quick Role Testing (Auto-Login)', style: ZomatoTheme.bodyMedium, textAlign: TextAlign.center),
                       const SizedBox(height: 16),

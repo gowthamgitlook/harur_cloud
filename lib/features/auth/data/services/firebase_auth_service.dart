@@ -195,8 +195,23 @@ class FirebaseAuthService implements IAuthService {
       }
       await saveUser(existing);
       return existing;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'operation-not-allowed') {
+        throw Exception('Google Sign-In is not enabled. Please contact support.');
+      }
+      if (e.code == 'popup-closed-by-user' || e.code == 'cancelled-popup-request') {
+        throw Exception('Sign-in was cancelled.');
+      }
+      throw Exception(e.message ?? 'Google sign-in failed');
     } catch (e) {
-      throw Exception('Google login failed: $e');
+      final msg = e.toString();
+      if (msg.contains('Null check operator') || msg.contains('null value')) {
+        throw Exception(
+          'Google Sign-In is not configured in Firebase Console. '
+          'Please enable Google as a sign-in provider.',
+        );
+      }
+      throw Exception('Google login failed: $msg');
     }
   }
 
